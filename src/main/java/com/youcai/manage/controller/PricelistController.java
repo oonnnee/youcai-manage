@@ -3,7 +3,7 @@ package com.youcai.manage.controller;
 import com.youcai.manage.dataobject.*;
 import com.youcai.manage.dto.PricelistDTO;
 import com.youcai.manage.enums.ResultEnum;
-import com.youcai.manage.exception.YoucaiException;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.PricelistService;
@@ -147,7 +147,7 @@ public class PricelistController {
                     new TypeToken<List<PricelistDTO>>() {
                     }.getType());
         } catch (Exception e) {
-            throw new YoucaiException(ResultEnum.MANAGE_PRICELIST_SAVE_PRICES_PARSE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_PRICELIST_SAVE_PRICES_PARSE_ERROR);
         }
         List<Pricelist> pricelists = pricelistDTOS.stream().map(e ->
                 new Pricelist(new PricelistKey(pdate, guestId, e.getProductId()),

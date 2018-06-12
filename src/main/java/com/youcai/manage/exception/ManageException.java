@@ -4,16 +4,16 @@ import com.youcai.manage.enums.ResultEnum;
 import lombok.Getter;
 
 @Getter
-public class YoucaiException extends RuntimeException {
+public class ManageException extends RuntimeException {
 
     private Integer code;
 
-    public YoucaiException(ResultEnum resultEnum) {
+    public ManageException(ResultEnum resultEnum) {
         super(resultEnum.getMsg());
         this.code = resultEnum.getCode();
     }
 
-    public YoucaiException(Integer code, String msg){
+    public ManageException(Integer code, String msg){
         super(msg);
         this.code = code;
     }

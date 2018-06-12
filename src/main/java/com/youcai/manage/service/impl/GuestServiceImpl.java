@@ -2,7 +2,7 @@ package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.enums.ResultEnum;
-import com.youcai.manage.exception.YoucaiException;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.GuestRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.utils.EDSUtils;
@@ -28,7 +28,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         guest.setPwd(EDSUtils.encryptBasedDes(guest.getPwd()));
         Guest saveResult = guestRepository.save(guest);
         if (saveResult == null){
-            throw new YoucaiException(ResultEnum.MANAGE_GUEST_SAVE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_GUEST_SAVE_ERROR);
         }
         return saveResult;
     }
@@ -42,7 +42,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         /*------------ 2.更新 -------------*/
         Guest updateResult = guestRepository.save(guest);
         if (updateResult == null){
-            throw new YoucaiException(ResultEnum.MANAGE_GUEST_UPDATE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_GUEST_UPDATE_ERROR);
         }
         /*------------ 3.结果处理 -------------*/
         /*------------ 4.返回结果 -------------*/

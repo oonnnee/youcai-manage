@@ -2,7 +2,7 @@ package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.enums.ResultEnum;
-import com.youcai.manage.exception.YoucaiException;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.ProductRepository;
 import com.youcai.manage.service.ProductService;
 import com.youcai.manage.utils.KeyUtils;
@@ -32,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
         /*------------ 2.保存 -------------*/
         Product saveResult = productRepository.save(product);
         if (saveResult == null){
-            throw new YoucaiException(ResultEnum.MANAGE_PRODUCT_SAVE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_PRODUCT_SAVE_ERROR);
         }
         return saveResult;
     }
@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
     public Product update(Product product) {
         Product updateResult = productRepository.save(product);
         if (updateResult == null){
-            throw new YoucaiException(ResultEnum.MANAGE_PRODUCT_UPDATE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_PRODUCT_UPDATE_ERROR);
         }
         return updateResult;
     }

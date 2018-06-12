@@ -1,7 +1,7 @@
 package com.youcai.manage.controller;
 
 import com.youcai.manage.enums.ResultEnum;
-import com.youcai.manage.exception.YoucaiException;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,7 @@ public class UploadController {
     @PostMapping("/image")
     public ResultVO<String> image(@RequestParam("upload_file") MultipartFile file) throws IOException {
         if (file.isEmpty() || StringUtils.isEmpty(file.getOriginalFilename())) {
-            throw new YoucaiException(ResultEnum.MANAGE_UPLOAD_IMAGE_EMPTY);
+            throw new ManageException(ResultEnum.MANAGE_UPLOAD_IMAGE_EMPTY);
         }
         File directory = new File(location);
         if (!directory.exists()) {
