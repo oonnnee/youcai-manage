@@ -29,7 +29,7 @@ public class DeliverController {
     private DriverService driverService;
 
     @GetMapping("/list")
-    public ResultVO<Page<com.youcai.manage.vo.order.ListVO>> list(
+    public ResultVO<Page<ListVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ){
@@ -41,6 +41,38 @@ public class DeliverController {
         /*------------ 2.查询 -------------*/
         Page<Guest> guestPage = deliverService.findGuestPage(pageable);
         return ResultVOUtils.success(this.getListVOPage(guestPage, pageable));
+    }
+
+    @GetMapping("/listByGuestNameLike")
+    public ResultVO<Page<ListVO>> listByGuestNameLike(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String guestName
+    ){
+        /*------------ 1.准备 -------------*/
+        // 分页
+        page = page<0 ? 0:page;
+        size = size<=0 ? 10:size;
+        Pageable pageable = new PageRequest(page, size);
+        /*------------ 2.查询 -------------*/
+        Page<Guest> guestIdPage = deliverService.findGuestPageByGuestNameLike(pageable, guestName);
+        return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
+    }
+
+    @GetMapping("/listByDriverNameLike")
+    public ResultVO<Page<ListVO>> listByDriverNameLike(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String guestName
+    ){
+        /*------------ 1.准备 -------------*/
+        // 分页
+        page = page<0 ? 0:page;
+        size = size<=0 ? 10:size;
+        Pageable pageable = new PageRequest(page, size);
+        /*------------ 2.查询 -------------*/
+        Page<Guest> guestIdPage = deliverService.findGuestPageByGuestNameLike(pageable, guestName);
+        return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
     }
 
     private Page<ListVO> getListVOPage(Page<Guest> guestPage, Pageable pageable){

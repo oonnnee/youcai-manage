@@ -10,4 +10,6 @@ import java.util.List;
 public interface DeliverService {
     List<Deliver> findByIdGuestId(String guestId);
     Page<Guest> findGuestPage(Pageable pageable);
+    Page<Guest> findGuestPageByGuestNameLike(Pageable pageable, String guestName);
+    Page<Guest> findGuestPageByDriverNameLike(Pageable pageable, String guestName);
 }

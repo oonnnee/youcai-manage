@@ -30,4 +30,17 @@ public class DeliverServiceImpl implements DeliverService {
         List<String> guestIds = deliverRepository.findDistinctIdGuestId();
         return guestService.findByIdIn(guestIds, pageable);
     }
+
+    @Override
+    public Page<Guest> findGuestPageByGuestNameLike(Pageable pageable, String guestName) {
+        List<String> guestIds = deliverRepository.findDistinctIdGuestId();
+        return guestService.findByIdInAndNameLike(guestIds, guestName, pageable);
+    }
+
+    @Override
+    public Page<Guest> findGuestPageByDriverNameLike(Pageable pageable, String guestName) {
+        List<Integer> driverIds = deliverRepository.findDistinctIdDriverId();
+
+        return null;
+    }
 }
