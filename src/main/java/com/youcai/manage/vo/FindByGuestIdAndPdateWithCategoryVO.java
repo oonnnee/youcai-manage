@@ -8,9 +8,9 @@ import java.util.List;
 @Data
 public class FindByGuestIdAndPdateWithCategoryVO {
 
-    private String categoryCode;
+    private String code;
 
-    private String categoryName;
+    private String name;
 
     @JsonProperty("products")
     private List<FindByGuestIdAndPdateVO> findByGuestIdAndPdateVOS;

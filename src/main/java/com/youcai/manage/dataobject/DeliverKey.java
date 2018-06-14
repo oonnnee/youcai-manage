@@ -16,7 +16,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeliverListKey implements Serializable {
+public class DeliverKey implements Serializable {
 
     @Column(name = "d_id")
     private Integer driverId;

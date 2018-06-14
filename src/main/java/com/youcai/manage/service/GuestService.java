@@ -4,6 +4,8 @@ import com.youcai.manage.dataobject.Guest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 
 public interface GuestService {
 
@@ -26,4 +28,8 @@ public interface GuestService {
     Page<Guest> findByIdLike(String id, Pageable pageable);
 
     Long countAll();
+
+    Page<Guest> findByIdIn(List<String> ids, Pageable pageable);
+
+    Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable);
 }

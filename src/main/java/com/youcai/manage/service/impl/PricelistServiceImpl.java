@@ -13,6 +13,7 @@ import com.youcai.manage.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
@@ -34,6 +35,7 @@ public class PricelistServiceImpl implements PricelistService {
     }
 
     @Override
+    @Transactional
     public void save(List<Pricelist> pricelists) {
         for (Pricelist pricelist : pricelists){
             pricelistRepository.save(pricelist);
@@ -41,6 +43,7 @@ public class PricelistServiceImpl implements PricelistService {
     }
 
     @Override
+    @Transactional
     public void delete(String guestId, Date pdate) {
         pricelistRepository.deleteById_GuestIdAndId_Pdate(guestId, pdate);
     }

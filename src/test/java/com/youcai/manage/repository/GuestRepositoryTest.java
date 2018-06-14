@@ -5,9 +5,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.transaction.Transactional;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
@@ -65,4 +70,18 @@ public class GuestRepositoryTest {
         Long count = guestRepository.countBy();
         System.out.println(count);
     }
+
+    @Test
+    public void findByIdInAndNameLike(){
+        Page<Guest> guestPage = guestRepository.findByIdInAndNameLike(
+                Arrays.asList("1442933609", "3224913525", "6911940723"),
+                "%1%", new PageRequest(0, 10));
+    }
+
+    @Test
+    public void findByNameLike(){
+        Page<Guest> guestPage = guestRepository.findByNameLike(
+                "%1%", new PageRequest(0, 10));
+    }
+
 }

@@ -16,6 +16,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.transaction.Transactional;
+import java.util.List;
+
 @Service
 public class GuestServiceImpl implements GuestService, UserDetailsService {
 
@@ -23,6 +26,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     private GuestRepository guestRepository;
 
     @Override
+    @Transactional
     public Guest save(Guest guest) {
         guest.setId(KeyUtils.generate());
         guest.setPwd(EDSUtils.encryptBasedDes(guest.getPwd()));
@@ -34,6 +38,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public Guest update(Guest guest) {
         /*------------ 1.准备 -------------*/
         // 填充密码
@@ -50,6 +55,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
         guestRepository.delete(id);
     }
@@ -91,6 +97,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     }
 
     @Override
+    @Transactional
     public void updatePwd(String id, String pwd) {
         /*------------ 1.查询用户 -------------*/
         Guest guest = guestRepository.findOne(id);
@@ -111,5 +118,15 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     @Override
     public Long countAll() {
         return guestRepository.countBy()-1;
+    }
+
+    @Override
+    public Page<Guest> findByIdIn(List<String> ids, Pageable pageable) {
+        return guestRepository.findByIdIn(ids, pageable);
+    }
+
+    @Override
+    public Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable) {
+        return guestRepository.findByIdInAndNameLike(ids, "%"+name+"%", pageable);
     }
 }

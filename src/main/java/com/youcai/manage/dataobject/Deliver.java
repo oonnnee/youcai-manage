@@ -14,11 +14,11 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DeliverList {
+public class Deliver {
 
     /*---  * 联合主键：司机id、客户id、送货日期、产品id ---*/
     @EmbeddedId
-    private DeliverListKey id;
+    private DeliverKey id;
 
     private BigDecimal price;
 

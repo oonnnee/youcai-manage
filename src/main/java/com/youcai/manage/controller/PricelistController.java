@@ -41,8 +41,8 @@ public class PricelistController {
     private CategoryService categoryService;
 
 
-    @GetMapping("/findPdateListByGuestIdLike")
-    public ResultVO<Page<PricelistDateVO>> findPdateListByGuestIdLike(
+    @GetMapping("/listByGuestIdLike")
+    public ResultVO<Page<PricelistDateVO>> listByGuestIdLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestId
@@ -54,27 +54,12 @@ public class PricelistController {
         Pageable pageable = new PageRequest(page, size);
 
         /*------------ 2.查询 -------------*/
-        List<PricelistDateVO> pricelistDateVOS = new ArrayList<>();
         Page<Guest> guestPage = guestService.findByIdLike(guestId, pageable);
-        for (Guest guest : guestPage.getContent()){
-            if (guest.getId().equals("admin")){
-                continue;
-            }
-            List<Pricelist> pricelists = pricelistService.findById_GuestId(guest.getId());
-            Set<Date> dates = new TreeSet<>(new DateComparator());
-            for (Pricelist pricelist : pricelists){
-                dates.add(pricelist.getId().getPdate());
-            }
-            PricelistDateVO pricelistVO = new PricelistDateVO(guest.getId(), guest.getName(), dates);
-            pricelistDateVOS.add(pricelistVO);
-        }
-
-        Page<PricelistDateVO> pricelistDateVOPage = new PageImpl<PricelistDateVO>(pricelistDateVOS, pageable, guestPage.getTotalElements());
-        return ResultVOUtils.success(pricelistDateVOPage);
+        return ResultVOUtils.success(this.getPricelistDateVO(guestPage, pageable));
     }
 
-    @GetMapping("/findPdateListByGuestNameLike")
-    public ResultVO<Page<PricelistDateVO>> findPdateListByGuestNameLike(
+    @GetMapping("/listByGuestNameLike")
+    public ResultVO<Page<PricelistDateVO>> listByGuestNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestName
@@ -86,28 +71,13 @@ public class PricelistController {
         Pageable pageable = new PageRequest(page, size);
 
         /*------------ 2.查询 -------------*/
-        List<PricelistDateVO> pricelistDateVOS = new ArrayList<>();
         Page<Guest> guestPage = guestService.findByNameLike(guestName, pageable);
-        for (Guest guest : guestPage.getContent()){
-            if (guest.getId().equals("admin")){
-                continue;
-            }
-            List<Pricelist> pricelists = pricelistService.findById_GuestId(guest.getId());
-            Set<Date> dates = new TreeSet<>(new DateComparator());
-            for (Pricelist pricelist : pricelists){
-                dates.add(pricelist.getId().getPdate());
-            }
-            PricelistDateVO pricelistVO = new PricelistDateVO(guest.getId(), guest.getName(), dates);
-            pricelistDateVOS.add(pricelistVO);
-        }
-
-        Page<PricelistDateVO> pricelistDateVOPage = new PageImpl<PricelistDateVO>(pricelistDateVOS, pageable, guestPage.getTotalElements());
-        return ResultVOUtils.success(pricelistDateVOPage);
+        return ResultVOUtils.success(this.getPricelistDateVO(guestPage, pageable));
     }
 
 
-    @GetMapping("/pdateList")
-    public ResultVO<Page<PricelistDateVO>> pdateList(
+    @GetMapping("/list")
+    public ResultVO<Page<PricelistDateVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ){
@@ -117,8 +87,12 @@ public class PricelistController {
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
         /*------------ 2.查询 -------------*/
-        List<PricelistDateVO> pricelistDateVOS = new ArrayList<>();
         Page<Guest> guestPage = guestService.findAll(pageable);
+        return ResultVOUtils.success(this.getPricelistDateVO(guestPage, pageable));
+    }
+
+    private Page<PricelistDateVO> getPricelistDateVO(Page<Guest> guestPage, Pageable pageable){
+        List<PricelistDateVO> pricelistDateVOS = new ArrayList<>();
         for (Guest guest : guestPage.getContent()){
             if (guest.getId().equals("admin")){
                 continue;
@@ -132,13 +106,13 @@ public class PricelistController {
             pricelistDateVOS.add(pricelistVO);
         }
         Page<PricelistDateVO> pricelistDateVOPage = new PageImpl<PricelistDateVO>(pricelistDateVOS, pageable, guestPage.getTotalElements());
-        return ResultVOUtils.success(pricelistDateVOPage);
+        return pricelistDateVOPage;
     }
 
     @PostMapping({"/save", "update"})
     public ResultVO save(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
             @RequestParam String products
     ){
         List<PricelistDTO> pricelistDTOS = new ArrayList<>();
@@ -150,7 +124,7 @@ public class PricelistController {
             throw new ManageException(ResultEnum.MANAGE_PRICELIST_SAVE_PRICES_PARSE_ERROR);
         }
         List<Pricelist> pricelists = pricelistDTOS.stream().map(e ->
-                new Pricelist(new PricelistKey(pdate, guestId, e.getProductId()),
+                new Pricelist(new PricelistKey(date, guestId, e.getProductId()),
                         e.getPrice(), e.getNote())
         ).collect(Collectors.toList());
         pricelistService.save(pricelists);
@@ -160,20 +134,20 @@ public class PricelistController {
     @PostMapping("/delete")
     public ResultVO delete(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
-        pricelistService.delete(guestId, pdate);
+        pricelistService.delete(guestId, date);
         return ResultVOUtils.success();
     }
 
     @GetMapping("/find")
     public ResultVO find(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         List<PricelistDTO> pricelistDTOS = new ArrayList<>();
 
-        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, pdate);
+        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
         for (Pricelist pricelist : pricelists){
             String productId = pricelist.getId().getProductId();
             Product product = productService.findOne(productId);
@@ -191,38 +165,38 @@ public class PricelistController {
         PricelistVO pricelistVO = new PricelistVO();
 
         pricelistVO.setGuestId(guestId);
-        pricelistVO.setPdate(pdate);
+        pricelistVO.setPdate(date);
         pricelistVO.setPricelistDTOS(pricelistDTOS);
 
         return ResultVOUtils.success(pricelistVO);
     }
 
-    @GetMapping("/findPdatesByGuestId")
-    public ResultVO<List<Date>> findPdatesByGuestId(
+    @GetMapping("/findDatesByGuestId")
+    public ResultVO<List<Date>> findDatesByGuestId(
             @RequestParam String guestId
     ){
         List<Date> dates = pricelistService.findPdatesByGuestId(guestId);
         return ResultVOUtils.success(dates);
     }
 
-    @GetMapping("/findByGuestIdAndPdateWithCategory")
-    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findByGuestIdAndPdateWithCategory(
+    @GetMapping("/findCategoriesByGuestIdAndDate")
+    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategoriesByGuestIdAndDate(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         /*------------ 1.查询数据 -------------*/
         /*--- 产品大类数据 ---*/
         List<Category> categories = categoryService.findAll();
         /*--- 报价数据 ---*/
-        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, pdate);
+        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
         /*--- 产品数据 ---*/
         Map<String, Product> productMap = productService.findMap();
         /*------------ 2.数据拼装 -------------*/
         List<FindByGuestIdAndPdateWithCategoryVO> findByGuestIdAndPdateWithCategoryVOS = new ArrayList<>();
         for (Category category : categories){
             FindByGuestIdAndPdateWithCategoryVO findByGuestIdAndPdateWithCategoryVO = new FindByGuestIdAndPdateWithCategoryVO();
-            findByGuestIdAndPdateWithCategoryVO.setCategoryCode(category.getCode());
-            findByGuestIdAndPdateWithCategoryVO.setCategoryName(category.getName());
+            findByGuestIdAndPdateWithCategoryVO.setCode(category.getCode());
+            findByGuestIdAndPdateWithCategoryVO.setName(category.getName());
             List<FindByGuestIdAndPdateVO> findByGuestIdAndPdateVOS = new ArrayList<>();
             for (Pricelist pricelist : pricelists){
                 Product product = productMap.get(pricelist.getId().getProductId());
@@ -241,47 +215,4 @@ public class PricelistController {
         /*------------ 3.返回 -------------*/
         return ResultVOUtils.success(findByGuestIdAndPdateWithCategoryVOS);
     }
-
-//    @GetMapping("/findFullByGuestIdAndPdateWithCategory")
-//    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findFullByGuestIdAndPdateWithCategory(
-//            @RequestParam String guestId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate
-//    ){
-//        /*------------ 1.查询数据 -------------*/
-//        /*--- 产品大类数据 ---*/
-//        List<Category> categories = categoryService.findAll();
-//        /*--- 报价数据 ---*/
-//        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, pdate);
-//        Map<String, Pricelist> pricelistMap = pricelistService.findProductIdMap(guestId, pdate);
-//        /*--- 产品数据 ---*/
-//        Map<String, Product> productMap = productService.findMap();
-//        List<Product> products = productService.findAll();
-//        /*------------ 2.数据拼装 -------------*/
-//        List<FindByGuestIdAndPdateWithCategoryVO> findByGuestIdAndPdateWithCategoryVOS = new ArrayList<>();
-//        for (Category category : categories){
-//            FindByGuestIdAndPdateWithCategoryVO findByGuestIdAndPdateWithCategoryVO = new FindByGuestIdAndPdateWithCategoryVO();
-//            findByGuestIdAndPdateWithCategoryVO.setCategoryCode(category.getCode());
-//            findByGuestIdAndPdateWithCategoryVO.setCategoryName(category.getName());
-//            List<FindByGuestIdAndPdateVO> findByGuestIdAndPdateVOS = new ArrayList<>();
-//            for (Product product : products){
-//                if (product.getPCode().equals(category.getCode())){
-//                    FindByGuestIdAndPdateVO findByGuestIdAndPdateVO = new FindByGuestIdAndPdateVO();
-//                    findByGuestIdAndPdateVO.setProductId(product.getId());
-//                    findByGuestIdAndPdateVO.setProductName(product.getName());
-//                    findByGuestIdAndPdateVO.setPrice(BigDecimal.ZERO);
-//                    findByGuestIdAndPdateVO.setNote("");
-//                    if (pricelistMap.containsKey(product.getId())){
-//                        findByGuestIdAndPdateVO.setPrice(pricelistMap.get(product.getId()).getPrice());
-//                        findByGuestIdAndPdateVO.setNote(pricelistMap.get(product.getId()).getNote());
-//                    }
-//                    findByGuestIdAndPdateVOS.add(findByGuestIdAndPdateVO);
-//                }
-//
-//            }
-//            findByGuestIdAndPdateWithCategoryVO.setFindByGuestIdAndPdateVOS(findByGuestIdAndPdateVOS);
-//            findByGuestIdAndPdateWithCategoryVOS.add(findByGuestIdAndPdateWithCategoryVO);
-//        }
-//        /*------------ 3.返回 -------------*/
-//        return ResultVOUtils.success(findByGuestIdAndPdateWithCategoryVOS);
-//    }
 }

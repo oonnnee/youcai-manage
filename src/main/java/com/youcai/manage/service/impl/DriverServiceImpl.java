@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.transaction.Transactional;
+
 @Service
 public class DriverServiceImpl implements DriverService {
 
@@ -18,6 +20,7 @@ public class DriverServiceImpl implements DriverService {
     private DriverRepository driverRepository;
 
     @Override
+    @Transactional
     public Driver save(Driver driver) {
         Driver saveResult = driverRepository.save(driver);
         if (saveResult == null){
@@ -27,11 +30,13 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional
     public void delete(Integer id) {
         driverRepository.delete(id);
     }
 
     @Override
+    @Transactional
     public Driver update(Driver driver) {
         if (driver.getId() == null){
             throw new ManageException(ResultEnum.MANAGE_DRIVER_UPDATE_NULL_ID);

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import javax.transaction.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
 
     @Override
+    @Transactional
     public Product save(Product product) {
         /*------------ 1.准备 -------------*/
         // 生成产品id
@@ -38,11 +40,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
         productRepository.delete(id);
     }
 
     @Override
+    @Transactional
     public Product update(Product product) {
         Product updateResult = productRepository.save(product);
         if (updateResult == null){
