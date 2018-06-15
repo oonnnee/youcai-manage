@@ -4,6 +4,8 @@ import com.youcai.manage.dataobject.Driver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Map;
+
 public interface DriverService {
 
     Driver save(Driver driver);
@@ -18,4 +20,6 @@ public interface DriverService {
 
     Page<Driver> findByNameLike(String name, Pageable pageable);
 
+    Map<Integer, String> findMap();
+    Map<Integer, String> findMapByNameLike(String name);
 }

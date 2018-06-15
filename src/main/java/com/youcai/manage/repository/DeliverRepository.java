@@ -9,10 +9,4 @@ import java.util.List;
 
 public interface DeliverRepository extends JpaRepository<Deliver, DeliverKey> {
     List<Deliver> findByIdGuestId(String guestId);
-
-    @Query(value = "select distinct guest_id from d_list", nativeQuery = true)
-    List<String> findDistinctIdGuestId();
-
-    @Query(value = "select distinct d_id from d_list", nativeQuery = true)
-    List<Integer> findDistinctIdDriverId();
 }

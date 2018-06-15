@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.transaction.Transactional;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class GuestServiceImpl implements GuestService, UserDetailsService {
@@ -128,5 +130,25 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
     @Override
     public Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable) {
         return guestRepository.findByIdInAndNameLike(ids, "%"+name+"%", pageable);
+    }
+
+    @Override
+    public Map<String, String> findMap() {
+        List<Guest> guests = guestRepository.findAll();
+        Map<String, String> map = new HashMap<>();
+        for(Guest guest : guests){
+            map.put(guest.getId(), guest.getName());
+        }
+        return map;
+    }
+
+    @Override
+    public Map<String, String> findMapByNameLike(String name){
+        List<Guest> guests = guestRepository.findByNameLike("%" + name + "%");
+        Map<String, String> map = new HashMap<>();
+        for(Guest guest : guests){
+            map.put(guest.getId(), guest.getName());
+        }
+        return map;
     }
 }

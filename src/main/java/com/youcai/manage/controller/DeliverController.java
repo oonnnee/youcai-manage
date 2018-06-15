@@ -2,6 +2,8 @@ package com.youcai.manage.controller;
 
 import com.youcai.manage.dataobject.Deliver;
 import com.youcai.manage.dataobject.Guest;
+import com.youcai.manage.dto.deliver.ListDTO;
+import com.youcai.manage.dto.deliver.ListKey;
 import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.DriverService;
 import com.youcai.manage.utils.ResultVOUtils;
@@ -39,8 +41,8 @@ public class DeliverController {
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
         /*------------ 2.查询 -------------*/
-        Page<Guest> guestPage = deliverService.findGuestPage(pageable);
-        return ResultVOUtils.success(this.getListVOPage(guestPage, pageable));
+        List<ListDTO> listDTOS = deliverService.findListDTOS();
+        return ResultVOUtils.success(getListVOPage(listDTOS, pageable));
     }
 
     @GetMapping("/listByGuestNameLike")
@@ -55,15 +57,15 @@ public class DeliverController {
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
         /*------------ 2.查询 -------------*/
-        Page<Guest> guestIdPage = deliverService.findGuestPageByGuestNameLike(pageable, guestName);
-        return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
+        List<ListDTO> listDTOS = deliverService.findListDTOSByGuestName(guestName);
+        return ResultVOUtils.success(getListVOPage(listDTOS, pageable));
     }
 
     @GetMapping("/listByDriverNameLike")
     public ResultVO<Page<ListVO>> listByDriverNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String guestName
+            @RequestParam(required = false) String driverName
     ){
         /*------------ 1.准备 -------------*/
         // 分页
@@ -71,37 +73,33 @@ public class DeliverController {
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
         /*------------ 2.查询 -------------*/
-        Page<Guest> guestIdPage = deliverService.findGuestPageByGuestNameLike(pageable, guestName);
-        return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
+        List<ListDTO> listDTOS = deliverService.findListDTOSByDriverName(driverName);
+        return ResultVOUtils.success(getListVOPage(listDTOS, pageable));
     }
 
-    private Page<ListVO> getListVOPage(Page<Guest> guestPage, Pageable pageable){
-        List<ListVO> listVOS = new ArrayList<>();
-        for (Guest guest : guestPage.getContent()){
-            List<Deliver> delivers = deliverService.findByIdGuestId(guest.getId());
-            Map<Integer, Set<Date>> map = new HashMap<>();
-            for (Deliver deliver : delivers){
-                Integer driverId = deliver.getId().getDriverId();
-                Set<Date> dates = map.get(driverId);
-                if (dates != null){
-                    dates.add(deliver.getId().getDdate());
-                }else{
-                    Set<Date> ds = new TreeSet<>(new DateComparator());
-                    ds.add(deliver.getId().getDdate());
-                    map.put(driverId, ds);
-                }
-            }
-            Set<Integer> driverIdSet = map.keySet();
-            for (Integer driverId : driverIdSet){
-                ListVO listVO = new ListVO(
-                        guest.getId(), guest.getName(),
-                        driverId, driverService.findOne(driverId).getName(),
-                        map.get(driverId)
-                );
-                listVOS.add(listVO);
+    private Page<ListVO> getListVOPage(List<ListDTO> listDTOS, Pageable pageable){
+        Map<ListKey, Set<Date>> map = new HashMap<>();
+        for (ListDTO listDTO : listDTOS){
+            Set<Date> dates = map.get(listDTO.getListKey());
+            if (dates != null){
+                dates.add(listDTO.getDate());
+            }else{
+                Set<Date> ds = new TreeSet<>(new DateComparator());
+                ds.add(listDTO.getDate());
+                map.put(listDTO.getListKey(), ds);
             }
         }
-        Page<ListVO> listVOPage = new PageImpl<ListVO>(listVOS, pageable, guestPage.getTotalElements());
-        return listVOPage;
+        List<ListVO> listVOS = new ArrayList<>();
+        Set<ListKey> listKeySet = map.keySet();
+        for (ListKey listKey : listKeySet){
+            ListVO listVO = new ListVO();
+            listVO.setDriverId(listKey.getDriverId());
+            listVO.setGuestId(listKey.getGuestId());
+            listVO.setDriverName(listKey.getDriverName());
+            listVO.setGuestName(listKey.getGuestName());
+            listVO.setDates(map.get(listKey));
+            listVOS.add(listVO);
+        }
+        return new PageImpl<>(listVOS, pageable, listVOS.size());
     }
 }

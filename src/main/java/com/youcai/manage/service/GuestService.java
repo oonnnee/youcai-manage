@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface GuestService {
@@ -32,4 +33,7 @@ public interface GuestService {
     Page<Guest> findByIdIn(List<String> ids, Pageable pageable);
 
     Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable);
+
+    Map<String, String> findMap();
+    Map<String, String> findMapByNameLike(String name);
 }

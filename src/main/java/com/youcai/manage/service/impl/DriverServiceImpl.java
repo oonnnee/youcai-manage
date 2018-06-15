@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.transaction.Transactional;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class DriverServiceImpl implements DriverService {
@@ -66,5 +69,25 @@ public class DriverServiceImpl implements DriverService {
             return driverRepository.findAll(pageable);
         }
         return driverRepository.findByNameLike("%"+name+"%", pageable);
+    }
+
+    @Override
+    public Map<Integer, String> findMap() {
+        List<Driver> drivers = driverRepository.findAll();
+        Map<Integer, String> map = new HashMap<>();
+        for (Driver driver : drivers){
+            map.put(driver.getId(), driver.getName());
+        }
+        return map;
+    }
+
+    @Override
+    public Map<Integer, String> findMapByNameLike(String name) {
+        List<Driver> drivers = driverRepository.findByNameLike("%"+name+"%");
+        Map<Integer, String> map = new HashMap<>();
+        for (Driver driver : drivers){
+            map.put(driver.getId(), driver.getName());
+        }
+        return map;
     }
 }

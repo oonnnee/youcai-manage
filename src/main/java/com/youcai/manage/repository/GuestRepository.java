@@ -10,6 +10,7 @@ import java.util.List;
 public interface GuestRepository extends JpaRepository<Guest, String> {
 
     Page<Guest> findByNameLike(String name, Pageable pageable);
+    List<Guest> findByNameLike(String name);
 
     Page<Guest> findByIdLike(String id, Pageable pageable);
 
