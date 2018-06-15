@@ -37,9 +37,7 @@ public class PricelistServiceImpl implements PricelistService {
     @Override
     @Transactional
     public void save(List<Pricelist> pricelists) {
-        for (Pricelist pricelist : pricelists){
-            pricelistRepository.save(pricelist);
-        }
+        pricelistRepository.save(pricelists);
     }
 
     @Override

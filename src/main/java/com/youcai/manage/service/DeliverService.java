@@ -17,4 +17,5 @@ public interface DeliverService {
     Set<ListVO> findListVOSetByGuestName(String guestName);
     Set<ListVO> findListVOSetByDriverName(String driverName);
     void delete(String guestId, Integer driverId, Date date);
+    void save(List<Deliver> delivers);
 }

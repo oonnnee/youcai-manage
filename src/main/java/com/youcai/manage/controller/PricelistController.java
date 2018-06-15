@@ -121,7 +121,7 @@ public class PricelistController {
                     new TypeToken<List<PricelistDTO>>() {
                     }.getType());
         } catch (Exception e) {
-            throw new ManageException(ResultEnum.MANAGE_PRICELIST_SAVE_PRICES_PARSE_ERROR);
+            throw new ManageException(ResultEnum.MANAGE_PRICELIST_SAVE_JSON_PARSE_ERROR);
         }
         List<Pricelist> pricelists = pricelistDTOS.stream().map(e ->
                 new Pricelist(new PricelistKey(date, guestId, e.getProductId()),

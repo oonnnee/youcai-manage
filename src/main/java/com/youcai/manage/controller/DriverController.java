@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/driver")
 public class DriverController {
@@ -74,5 +76,10 @@ public class DriverController {
         /*------------ 2.查询 -------------*/
         Page<Driver> driverPage = driverService.list(pageable);
         return ResultVOUtils.success(driverPage);
+    }
+
+    @GetMapping("findAll")
+    public ResultVO<List<Driver>> findAll(){
+        return ResultVOUtils.success(driverService.findAll());
     }
 }

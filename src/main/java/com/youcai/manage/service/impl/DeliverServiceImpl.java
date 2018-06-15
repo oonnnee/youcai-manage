@@ -103,4 +103,10 @@ public class DeliverServiceImpl implements DeliverService {
     public void delete(String guestId, Integer driverId, Date date) {
         deliverRepository.delete(guestId, driverId, date);
     }
+
+    @Override
+    @Transactional
+    public void save(List<Deliver> delivers) {
+        deliverRepository.save(delivers);
+    }
 }

@@ -90,4 +90,9 @@ public class DriverServiceImpl implements DriverService {
         }
         return map;
     }
+
+    @Override
+    public List<Driver> findAll() {
+        return driverRepository.findAll();
+    }
 }

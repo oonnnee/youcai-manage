@@ -1,9 +1,11 @@
 package com.youcai.manage.controller;
 
-import com.youcai.manage.dataobject.Category;
-import com.youcai.manage.dataobject.Deliver;
-import com.youcai.manage.dataobject.Order;
-import com.youcai.manage.dataobject.Product;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.youcai.manage.dataobject.*;
+import com.youcai.manage.dto.deliver.ProductDTO;
+import com.youcai.manage.enums.ResultEnum;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.DriverService;
@@ -23,6 +25,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/deliver")
@@ -140,6 +143,29 @@ public class DeliverController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         deliverService.delete(guestId, driverId, date);
+        return ResultVOUtils.success();
+    }
+
+    @PostMapping("/save")
+    public ResultVO save(
+            @RequestParam String guestId,
+            @RequestParam Integer driverId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String products
+    ){
+        List<ProductDTO> productDTOS = new ArrayList<>();
+        try {
+            productDTOS = new Gson().fromJson(products,
+                    new TypeToken<List<ProductDTO>>() {
+                    }.getType());
+        } catch (Exception e) {
+            throw new ManageException(ResultEnum.MANAGE_DELIVER_SAVE_JSON_PARSE_ERROR);
+        }
+        List<Deliver> delivers = productDTOS.stream().map(e ->
+                new Deliver(new DeliverKey(driverId, guestId, date, e.getId()),
+                        e.getPrice(), e.getNum(), e.getPrice().multiply(e.getNum()), e.getNote())
+        ).collect(Collectors.toList());
+        deliverService.save(delivers);
         return ResultVOUtils.success();
     }
 }

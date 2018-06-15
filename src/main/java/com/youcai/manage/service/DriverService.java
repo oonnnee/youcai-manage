@@ -4,6 +4,7 @@ import com.youcai.manage.dataobject.Driver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Map;
 
 public interface DriverService {
@@ -15,6 +16,8 @@ public interface DriverService {
     Driver update(Driver driver);
 
     Driver findOne(Integer id);
+
+    List<Driver> findAll();
 
     Page<Driver> list(Pageable pageable);
 
