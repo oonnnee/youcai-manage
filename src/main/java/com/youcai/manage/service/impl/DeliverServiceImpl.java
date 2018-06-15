@@ -1,21 +1,16 @@
 package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Deliver;
-import com.youcai.manage.dataobject.Guest;
-import com.youcai.manage.dto.deliver.ListDTO;
-import com.youcai.manage.dto.deliver.ListKey;
 import com.youcai.manage.repository.DeliverRepository;
 import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.DriverService;
 import com.youcai.manage.service.GuestService;
+import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.transaction.Transactional;
+import java.util.*;
 
 @Service
 public class DeliverServiceImpl implements DeliverService {
@@ -33,59 +28,79 @@ public class DeliverServiceImpl implements DeliverService {
     }
 
     @Override
-    public List<ListDTO> findListDTOS() {
+    public Set<ListVO> findListVOSet() {
         List<Deliver> delivers = deliverRepository.findAll();
         Map<Integer, String> driverMap = driverService.findMap();
         Map<String, String> guestMap = guestService.findMap();
-        List<ListDTO> listDTOS = new ArrayList<>();
+        Set<ListVO> listVOSet = new HashSet<>();
         for (Deliver deliver : delivers){
             Integer driverId = deliver.getId().getDriverId();
             String guestId = deliver.getId().getGuestId();
-            ListDTO listDTO = new ListDTO();
-            listDTO.setListKey(new ListKey(driverId, guestId, driverMap.get(driverId), guestMap.get(guestId)));
-            listDTO.setDate(deliver.getId().getDdate());
-            listDTOS.add(listDTO);
+            ListVO listVO = new ListVO();
+            listVO.setGuestId(guestId);
+            listVO.setGuestName(guestMap.get(guestId));
+            listVO.setDriverId(driverId);
+            listVO.setDriverName(driverMap.get(driverId));
+            listVO.setDate(deliver.getId().getDdate());
+            listVOSet.add(listVO);
         }
-        return listDTOS;
+        return listVOSet;
     }
 
     @Override
-    public List<ListDTO> findListDTOSByDriverName(String driverName) {
+    public Set<ListVO> findListVOSetByDriverName(String driverName) {
         List<Deliver> delivers = deliverRepository.findAll();
         Map<Integer, String> driverMap = driverService.findMapByNameLike(driverName);
         Map<String, String> guestMap = guestService.findMap();
-        List<ListDTO> listDTOS = new ArrayList<>();
+        Set<ListVO> listVOSet = new HashSet<>();
         for (Deliver deliver : delivers){
             if (driverMap.get(deliver.getId().getDriverId()) == null){
                 continue;
             }
             Integer driverId = deliver.getId().getDriverId();
             String guestId = deliver.getId().getGuestId();
-            ListDTO listDTO = new ListDTO();
-            listDTO.setListKey(new ListKey(driverId, guestId, driverMap.get(driverId), guestMap.get(guestId)));
-            listDTO.setDate(deliver.getId().getDdate());
-            listDTOS.add(listDTO);
+            ListVO listVO = new ListVO();
+            listVO.setGuestId(guestId);
+            listVO.setGuestName(guestMap.get(guestId));
+            listVO.setDriverId(driverId);
+            listVO.setDriverName(driverMap.get(driverId));
+            listVO.setDate(deliver.getId().getDdate());
+            listVOSet.add(listVO);
         }
-        return listDTOS;
+        return listVOSet;
     }
 
     @Override
-    public List<ListDTO> findListDTOSByGuestName(String guestName) {
+    public Set<ListVO> findListVOSetByGuestName(String guestName) {
         List<Deliver> delivers = deliverRepository.findAll();
         Map<Integer, String> driverMap = driverService.findMap();
         Map<String, String> guestMap = guestService.findMapByNameLike(guestName);
-        List<ListDTO> listDTOS = new ArrayList<>();
+        Set<ListVO> listVOSet = new HashSet<>();
         for (Deliver deliver : delivers){
             if (guestMap.get(deliver.getId().getGuestId()) == null){
                 continue;
             }
             Integer driverId = deliver.getId().getDriverId();
             String guestId = deliver.getId().getGuestId();
-            ListDTO listDTO = new ListDTO();
-            listDTO.setListKey(new ListKey(driverId, guestId, driverMap.get(driverId), guestMap.get(guestId)));
-            listDTO.setDate(deliver.getId().getDdate());
-            listDTOS.add(listDTO);
+            ListVO listVO = new ListVO();
+            listVO.setGuestId(guestId);
+            listVO.setGuestName(guestMap.get(guestId));
+            listVO.setDriverId(driverId);
+            listVO.setDriverName(driverMap.get(driverId));
+            listVO.setDate(deliver.getId().getDdate());
+            listVOSet.add(listVO);
         }
-        return listDTOS;
+        return listVOSet;
+    }
+
+    @Override
+    public List<Deliver> findByGuestIdAndDriverIdAndDate(String guestId, Integer driverId, Date date) {
+        return deliverRepository.findByIdGuestIdAndIdDriverIdAndIdDdate(guestId, driverId, date);
+    }
+
+    @Override
+    @Transactional
+    public void delete(String guestId, Integer driverId, Date date) {
+        deliverRepository.delete(guestId, driverId, date);
     }
 }

@@ -107,8 +107,8 @@ public class OrderController {
         return ResultVOUtils.success(dates);
     }
 
-    @GetMapping("/findCategoriesByGuestIdAndDate")
-    public ResultVO<List<CategoryVO>> findCategoriesByGuestIdAndDate(
+    @GetMapping("/findCategories")
+    public ResultVO<List<CategoryVO>> findCategories(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){

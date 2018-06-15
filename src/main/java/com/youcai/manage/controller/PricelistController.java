@@ -179,8 +179,8 @@ public class PricelistController {
         return ResultVOUtils.success(dates);
     }
 
-    @GetMapping("/findCategoriesByGuestIdAndDate")
-    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategoriesByGuestIdAndDate(
+    @GetMapping("/findCategories")
+    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategories(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
