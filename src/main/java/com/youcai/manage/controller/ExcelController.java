@@ -1,8 +1,11 @@
 package com.youcai.manage.controller;
 
+import com.google.gson.Gson;
+import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dto.excel.pricelist.CategoryExport;
 import com.youcai.manage.dto.excel.pricelist.Export;
 import com.youcai.manage.dto.excel.pricelist.ProductExport;
+import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.utils.excel.pricelist.ExportUtil;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
@@ -34,9 +37,11 @@ public class ExcelController {
 
     @Autowired
     private PricelistService pricelistService;
+    @Autowired
+    private OrderService orderService;
 
     @GetMapping("/pricelist/export")
-    public ResponseEntity<byte[]> exportPricelist(
+    public ResponseEntity<byte[]> pricelistExport(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date pdate
     ) throws IOException {
@@ -214,4 +219,14 @@ public class ExcelController {
         return new ResponseEntity<byte[]>(outByteStream.toByteArray(), headers, HttpStatus.OK);
     }
 
+    @GetMapping("/order/export")
+    public String orderExport(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+    ){
+        List<Order> orders = orderService.findByIdGuestIdAndIdDate(guestId, date);
+        String json = new Gson().toJson(orders);
+        System.out.println(json);
+        return "success";
+    }
 }
