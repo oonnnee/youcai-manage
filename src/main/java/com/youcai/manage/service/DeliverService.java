@@ -2,6 +2,7 @@ package com.youcai.manage.service;
 
 import com.youcai.manage.dataobject.Deliver;
 import com.youcai.manage.dataobject.Guest;
+import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,4 +19,5 @@ public interface DeliverService {
     Set<ListVO> findListVOSetByDriverName(String driverName);
     void delete(String guestId, Integer driverId, Date date);
     void save(List<Deliver> delivers);
+    Export getExcelExport(String guestId, Integer driverId, Date date);
 }

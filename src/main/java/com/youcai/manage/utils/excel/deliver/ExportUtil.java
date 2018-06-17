@@ -1,16 +1,12 @@
-package com.youcai.manage.utils.excel.order;
+package com.youcai.manage.utils.excel.deliver;
 
-import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.util.ResourceUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 
 
@@ -37,6 +33,21 @@ public class ExportUtil {
             HSSFFont font = workbook.createFont();
             setDefaultFont(font);
             cellStyle.setFont(font);
+            row.createCell(i).setCellStyle(cellStyle);
+        }
+        return row;
+    }
+
+    public static Row createRowNoBorder(int rowNumber, HSSFSheet sheet){
+        HSSFWorkbook workbook = sheet.getWorkbook();
+        Row row = sheet.createRow(rowNumber);
+        row.setHeight(ROW_HEIGHT);
+        CellStyle cellStyle = workbook.createCellStyle();
+        setDefaultCellStyle(cellStyle);
+        HSSFFont font = workbook.createFont();
+        setDefaultFont(font);
+        cellStyle.setFont(font);
+        for (int i=0; i<COL_COUNT; i++){
             row.createCell(i).setCellStyle(cellStyle);
         }
         return row;

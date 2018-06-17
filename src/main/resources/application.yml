@@ -2,6 +2,7 @@ spring:
   datasource:
 #    url: jdbc:mysql://47.94.238.122/youcai?useSSL=false
     url: jdbc:mysql:///youcai?useSSL=false
+#    url: jdbc:mysql://rm-2ze897dhq95z8g5603o.mysql.rds.aliyuncs.com:3306/youcai?useSSL=false
     password: qing1016..
     driver-class-name: com.mysql.jdbc.Driver
     username: root
