@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/category")
-public class CategoryController {
+public class CategoryRestController {
 
     @Autowired
     private CategoryService categoryService;

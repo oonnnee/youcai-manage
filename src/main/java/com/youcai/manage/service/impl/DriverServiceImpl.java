@@ -95,4 +95,9 @@ public class DriverServiceImpl implements DriverService {
     public List<Driver> findAll() {
         return driverRepository.findAll();
     }
+
+    @Override
+    public Long countAll() {
+        return driverRepository.count();
+    }
 }

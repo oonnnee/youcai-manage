@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
-public class ProductController {
+public class ProductRestController {
 
     @Autowired
     private ProductService productService;

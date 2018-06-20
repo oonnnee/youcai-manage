@@ -7,7 +7,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     username: root
   resources:
-    static-locations: file:${img.location}
+    static-locations: file:${img.location}, classpath:/static/
   jpa:
     show-sql: true
   jackson:

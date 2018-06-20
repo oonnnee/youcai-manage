@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/upload")
-public class UploadController {
+public class UploadRestController {
 
     @Value("${img.location}")
     private String location;

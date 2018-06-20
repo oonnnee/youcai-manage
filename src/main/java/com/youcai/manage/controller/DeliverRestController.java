@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/deliver")
-public class DeliverController {
+public class DeliverRestController {
     @Autowired
     private DeliverService deliverService;
     @Autowired
@@ -186,74 +186,4 @@ public class DeliverController {
         return ResultVOUtils.success();
     }
 
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> orderExport(
-            @RequestParam String guestId,
-            @RequestParam Integer driverId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ) throws IOException {
-        Export export = deliverService.getExcelExport(guestId, driverId, date);
-        // create a new workbook
-        HSSFWorkbook wb = new HSSFWorkbook();
-        // create a sheet
-        HSSFSheet sheet = wb.createSheet();
-        // Row Cell CellStyle
-        Row row = null;
-        Cell cell = null;
-        CellStyle cellStyle = null;
-        Font font = null;
-        int rowNumber = 0;
-        // 默认设置
-        ExportUtil.defaultSetting(sheet);
-        /*------------ 头部区 -------------*/
-        /*--- 送货单 ---*/
-        sheet.addMergedRegion(new CellRangeAddress(0,0,0,6));
-        row = ExportUtil.createRow(rowNumber++, sheet);
-        row.getCell(0).setCellValue("送货单");
-        /*--- 送货单客户名&日期 ---*/
-        sheet.addMergedRegion(new CellRangeAddress(1,1,0,6));
-        row = ExportUtil.createRow(rowNumber++, sheet);
-        row.getCell(0).setCellValue("客户："+export.getGuestName());
-        row.getCell(4).setCellValue("日期："+new SimpleDateFormat("yyyy年 MM月 dd日").format(export.getDate()));
-        /*------------ 内容区 -------------*/
-        /*--- 表格头 ---*/
-        row = ExportUtil.createRow(rowNumber++, sheet);
-        String[] tableHeads = {"编号", "品名", "数量", "单位", "单价", "金额", "备注"};
-        for (int i=0; i<tableHeads.length; i++){
-            row.getCell(i).setCellValue(tableHeads[i]);
-        }
-        /*--- 表格体 ---*/
-        for (ProductExport productExport : export.getProductExports()){
-            row = ExportUtil.createRow(rowNumber++, sheet);
-            String[] tds = {
-                    productExport.getIndex().toString(),
-                    productExport.getName(),
-                    productExport.getNum().stripTrailingZeros().toString(),
-                    productExport.getUnit(),
-                    productExport.getPrice().toString(),
-                    productExport.getAmount().toString(),
-                    productExport.getNote()
-            };
-            for (int i=0; i<tds.length; i++){
-                row.getCell(i).setCellValue(tds[i]);
-            }
-        }
-        /*--- 表格尾 ---*/
-        row = ExportUtil.createRow(rowNumber++, sheet);
-        row.getCell(4).setCellValue("合计：");
-        row.getCell(5).setCellValue(export.getAmount().toString());
-        /*------------ 尾部区 -------------*/
-        row = ExportUtil.createRowNoBorder(rowNumber++, sheet);
-        row.getCell(0).setCellValue("送货人："+export.getDriverName());
-        row.getCell(2).setCellValue("收货人：");
-        row.getCell(6).setCellValue("出纳：");
-        /*------------ 写入，返回 -------------*/
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentDispositionFormData("attachment",
-                "送货单 "+guestId+" "+new SimpleDateFormat("yyyy-MM-dd").format(export.getDate())+".xls");
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();
-        wb.write(outByteStream);
-        return new ResponseEntity<byte[]>(outByteStream.toByteArray(), headers, HttpStatus.OK);
-    }
 }

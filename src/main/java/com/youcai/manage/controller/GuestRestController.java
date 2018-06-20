@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/guest")
-public class GuestController {
+public class GuestRestController {
 
     @Autowired
     private GuestService guestService;

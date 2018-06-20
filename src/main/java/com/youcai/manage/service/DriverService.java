@@ -25,4 +25,5 @@ public interface DriverService {
 
     Map<Integer, String> findMap();
     Map<Integer, String> findMapByNameLike(String name);
+    Long countAll();
 }

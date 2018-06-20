@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/driver")
-public class DriverController {
+public class DriverRestController {
 
     @Autowired
     private DriverService driverService;
@@ -81,5 +81,10 @@ public class DriverController {
     @GetMapping("findAll")
     public ResultVO<List<Driver>> findAll(){
         return ResultVOUtils.success(driverService.findAll());
+    }
+
+    @GetMapping("/count")
+    public ResultVO<Long> count(){
+        return ResultVOUtils.success(driverService.countAll());
     }
 }
