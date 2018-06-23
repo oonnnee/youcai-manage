@@ -48,7 +48,7 @@ public class GuestRestController {
         return ResultVOUtils.success();
     }
 
-    @GetMapping("/find")
+    @GetMapping("/findOne")
     public ResultVO<Guest> findOne(
             @RequestParam String id
     ){
@@ -57,7 +57,7 @@ public class GuestRestController {
         return ResultVOUtils.success(findResult);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<Guest>> findAll(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -76,7 +76,7 @@ public class GuestRestController {
         return ResultVOUtils.success(guestPage);
     }
 
-    @GetMapping("/findByNameLike")
+    @GetMapping("/findPageByNameLike")
     public ResultVO<Page<Guest>> findByNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -96,7 +96,7 @@ public class GuestRestController {
         return ResultVOUtils.success(guestPage);
     }
 
-    @GetMapping("/findByIdLike")
+    @GetMapping("/findPageByIdLike")
     public ResultVO<Page<Guest>> findByIdLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -116,7 +116,7 @@ public class GuestRestController {
         return ResultVOUtils.success(guestPage);
     }
 
-    @GetMapping("/count")
+    @GetMapping("/countAll")
     public ResultVO<Long> count(){
         return ResultVOUtils.success(guestService.countAll());
     }
