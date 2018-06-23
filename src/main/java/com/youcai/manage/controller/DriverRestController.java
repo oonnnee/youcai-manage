@@ -39,7 +39,7 @@ public class DriverRestController {
         return ResultVOUtils.success(updateResult);
     }
 
-    @GetMapping("/find")
+    @GetMapping("/findOne")
     public ResultVO<Driver> find(
             @RequestParam Integer id
     ){
@@ -47,7 +47,7 @@ public class DriverRestController {
         return ResultVOUtils.success(findResult);
     }
 
-    @GetMapping("/findByNameLike")
+    @GetMapping("/findPageByNameLike")
     public ResultVO<Page<Driver>> findByNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -63,7 +63,7 @@ public class DriverRestController {
         return ResultVOUtils.success(driverPage);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<Driver>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -78,12 +78,12 @@ public class DriverRestController {
         return ResultVOUtils.success(driverPage);
     }
 
-    @GetMapping("findAll")
+    @GetMapping("findList")
     public ResultVO<List<Driver>> findAll(){
         return ResultVOUtils.success(driverService.findAll());
     }
 
-    @GetMapping("/count")
+    @GetMapping("/countAll")
     public ResultVO<Long> count(){
         return ResultVOUtils.success(driverService.countAll());
     }

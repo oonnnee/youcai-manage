@@ -50,7 +50,7 @@ public class ProductRestController {
         return ResultVOUtils.success(updateResult);
     }
 
-    @GetMapping("/find")
+    @GetMapping("/findOne")
     public ResultVO<ProductVO> findOne(
             @RequestParam String id
     ){
@@ -66,7 +66,7 @@ public class ProductRestController {
         return ResultVOUtils.success(productVO);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<ProductVO>> list(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
@@ -93,12 +93,12 @@ public class ProductRestController {
     }
 
 
-    @GetMapping("/findBy")
+    @GetMapping("/findPageByNameLikeAndCodeIn")
     public ResultVO<Page<ProductVO>> findByPCodeIn(
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false, name = "PCodes") String codeStr
+            @RequestParam(required = false, name = "codes") String codeStr
     ){
         /*------------ 1.准备 -------------*/
         // 分页
@@ -128,7 +128,7 @@ public class ProductRestController {
         return ResultVOUtils.success(productVOPage);
     }
 
-    @GetMapping("/count")
+    @GetMapping("/countAll")
     public ResultVO<Long> count(){
         return ResultVOUtils.success(productService.countAll());
     }
