@@ -16,5 +16,5 @@ security:
   basic:
     enabled: false
 img:
-#  location: /home/youcai/image
-  location: /Users/macos/tmp/youcai/image
+  location: /home/youcai/image/
+#  location: /Users/macos/tmp/youcai/image
