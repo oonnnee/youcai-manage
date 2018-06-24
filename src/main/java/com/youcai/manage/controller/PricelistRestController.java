@@ -58,7 +58,7 @@ public class PricelistRestController {
     private CategoryService categoryService;
 
 
-    @GetMapping("/listByGuestIdLike")
+    @GetMapping("/findPageByGuestIdLike")
     public ResultVO<Page<PricelistDateVO>> listByGuestIdLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -75,7 +75,7 @@ public class PricelistRestController {
         return ResultVOUtils.success(this.getPricelistDateVO(guestPage, pageable));
     }
 
-    @GetMapping("/listByGuestNameLike")
+    @GetMapping("/findPageByGuestNameLike")
     public ResultVO<Page<PricelistDateVO>> listByGuestNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -93,7 +93,7 @@ public class PricelistRestController {
     }
 
 
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<PricelistDateVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -157,7 +157,7 @@ public class PricelistRestController {
         return ResultVOUtils.success();
     }
 
-    @GetMapping("/find")
+    @GetMapping("/findOne")
     public ResultVO find(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
@@ -196,12 +196,12 @@ public class PricelistRestController {
         return ResultVOUtils.success(dates);
     }
 
-    @GetMapping("/findCategories")
+    @GetMapping("/findOneWithCategories")
     public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategories(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
-        /*------------ 1.查询数据 -------------*/
+        /*------------ 1.查询数据   -------------*/
         /*--- 产品大类数据 ---*/
         List<Category> categories = categoryService.findAll();
         /*--- 报价数据 ---*/

@@ -56,7 +56,7 @@ public class DeliverRestController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<ListVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -71,7 +71,7 @@ public class DeliverRestController {
         return ResultVOUtils.success(getListVOPage(listVOSet, pageable));
     }
 
-    @GetMapping("/listByGuestNameLike")
+    @GetMapping("/findPageByGuestNameLike")
     public ResultVO<Page<ListVO>> listByGuestNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -87,7 +87,7 @@ public class DeliverRestController {
         return ResultVOUtils.success(getListVOPage(listVOSet, pageable));
     }
 
-    @GetMapping("/listByDriverNameLike")
+    @GetMapping("/findPageByDriverNameLike")
     public ResultVO<Page<ListVO>> listByDriverNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -112,7 +112,7 @@ public class DeliverRestController {
         return new PageImpl<>(listVOS, pageable, listVOS.size());
     }
 
-    @GetMapping("/findCategories")
+    @GetMapping("/findOneWithCategories")
     public ResultVO<List<CategoryVO>> findCategories(
             @RequestParam String guestId,
             @RequestParam Integer driverId,

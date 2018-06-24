@@ -55,7 +55,7 @@ public class OrderRestController {
     @Autowired
     private ProductService productService;
     
-    @GetMapping("/list")
+    @GetMapping("/findPage")
     public ResultVO<Page<ListVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
@@ -70,7 +70,7 @@ public class OrderRestController {
         return ResultVOUtils.success(this.getListVOPage(guestPage, pageable));
     }
 
-    @GetMapping("/listByGuestIdLike")
+    @GetMapping("/findPageByGuestIdLike")
     public ResultVO<Page<ListVO>> listByGuestIdLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -86,7 +86,7 @@ public class OrderRestController {
         return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
     }
 
-    @GetMapping("/listByGuestNameLike")
+    @GetMapping("/findPageByGuestNameLike")
     public ResultVO<Page<ListVO>> listByGuestNameLike(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
@@ -125,7 +125,7 @@ public class OrderRestController {
         return ResultVOUtils.success(dates);
     }
 
-    @GetMapping("/findCategories")
+    @GetMapping("/findOneWithCategories")
     public ResultVO<List<CategoryVO>> findCategories(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
