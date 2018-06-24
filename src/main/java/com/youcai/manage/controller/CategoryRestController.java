@@ -26,19 +26,19 @@ public class CategoryRestController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping("/map")
+    @GetMapping("/findMap")
     public ResultVO<Map<String, String>> map(){
         Map<String, String> categoryMap = categoryService.findAllInMap();
         return ResultVOUtils.success(categoryMap);
     }
 
-    @GetMapping("/list")
+    @GetMapping("/findList")
     public ResultVO<List<Category>> list(){
         List<Category> categories = categoryService.findAll();
         return ResultVOUtils.success(categories);
     }
 
-    @GetMapping("/listWithProducts")
+    @GetMapping("/findListWithProducts")
     public ResultVO<List<CategoryWithProductsVO>> listWithProducts(){
         /*------------ 1.查询数据 -------------*/
         // 产品大类数据
