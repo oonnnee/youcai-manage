@@ -22,4 +22,6 @@ public class OrderKey implements Serializable {
     /*--- 采购单产品id ---*/
     private String productId;
 
+    private String state;
+
 }
