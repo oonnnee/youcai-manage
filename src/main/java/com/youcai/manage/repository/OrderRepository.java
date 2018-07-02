@@ -14,14 +14,13 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, OrderKey> {
     List<Order> findByIdGuestId(String guestId);
 
-    List<Order> findByIdGuestIdAndIdOdate(String guestId, Date date);
+    List<Order> findByIdGuestIdAndIdOdateAndIdState(String guestId, Date date, String state);
 
     @Query(value = "select distinct odate from orders where guest_id = ?1 order by odate desc", nativeQuery = true)
     List<Date> findDistinctIdOdateByIdGuestId(String guestId);
 
-    @Modifying
-    @Query(value = "delete from orders where guest_id=?1 and odate=?2", nativeQuery = true)
-    void deleteByIdGuestIdAndIdOdate(String guestId, Date date);
+    @Query(value = "select distinct state from orders where guest_id = ?1 and odate = ?2 order by state asc", nativeQuery = true)
+    List<String> findDistinctIdStateByIdGuestIdAndIdOdate(String guestId, Date date);
 
     @Query(value = "select distinct guest_id from orders", nativeQuery = true)
     List<String> findDistinctIdGuestId();

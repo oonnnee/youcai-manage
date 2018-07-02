@@ -12,9 +12,9 @@ import java.util.List;
 public interface OrderService {
     Page<Order> findAll(Pageable pageable);
     List<Order> findByIdGuestId(String guestId);
-    List<Order> findByIdGuestIdAndIdDate(String guestId, Date date);
+    List<Order> findByIdGuestIdAndIdDateAndIdState(String guestId, Date date, String state);
     List<Date> findDatesByGuestId(String guestId);
-    void delete(String guestId, Date date);
+    List<String> findStatesByGuestIdAndDate(String guestId, Date date);
     Page<Guest> findGuestPage(Pageable pageable);
     Page<Guest> findGuestPageByGuestIdLike(Pageable pageable, String guestId);
     Page<Guest> findGuestPageByGuestNameLike(Pageable pageable, String guestName);

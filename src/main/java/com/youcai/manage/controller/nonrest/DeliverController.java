@@ -4,13 +4,13 @@ import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.dto.excel.deliver.ProductExport;
 import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.utils.excel.deliver.ExportUtil;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -39,9 +39,9 @@ public class DeliverController {
     ) throws IOException {
         Export export = deliverService.getExcelExport(guestId, driverId, date);
         // create a new workbook
-        HSSFWorkbook wb = new HSSFWorkbook();
+        XSSFWorkbook wb = new XSSFWorkbook();
         // create a sheet
-        HSSFSheet sheet = wb.createSheet();
+        XSSFSheet sheet = wb.createSheet();
         // Row Cell CellStyle
         Row row = null;
         Cell cell = null;
@@ -88,18 +88,24 @@ public class DeliverController {
         row.getCell(4).setCellValue("合计：");
         row.getCell(5).setCellValue(export.getAmount().toString());
         /*------------ 尾部区 -------------*/
-        sheet.addMergedRegion(new CellRangeAddress(rowNumber,rowNumber,0,1));
+        sheet.addMergedRegion(new CellRangeAddress(rowNumber,rowNumber,0,2));
+        sheet.addMergedRegion(new CellRangeAddress(rowNumber,rowNumber,3,6));
         row = ExportUtil.createRowNoBorder(rowNumber++, sheet);
         row.getCell(0).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
-        row.getCell(0).setCellValue("送货人："+export.getDriverName());
-        row.getCell(2).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
-        row.getCell(2).setCellValue("收货人：");
-        row.getCell(5).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
-        row.getCell(5).setCellValue("出纳：");
+        row.getCell(0).setCellValue("送货人："+export.getDriver().getName());
+        row.getCell(3).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
+        row.getCell(3).setCellValue("送货人电话："+export.getDriver().getMobile());
+        sheet.addMergedRegion(new CellRangeAddress(rowNumber,rowNumber,0,2));
+        sheet.addMergedRegion(new CellRangeAddress(rowNumber,rowNumber,3,6));
+        row = ExportUtil.createRowNoBorder(rowNumber++, sheet);
+        row.getCell(0).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
+        row.getCell(0).setCellValue("收货人：");
+        row.getCell(3).getCellStyle().setAlignment(CellStyle.ALIGN_LEFT);
+        row.getCell(3).setCellValue("出纳：");
         /*------------ 写入，返回 -------------*/
         HttpHeaders headers = new HttpHeaders();
         String filename = new String("送货单 ".getBytes("UTF-8"), "iso-8859-1")
-                + guestId + " " + new SimpleDateFormat("yyyy-MM-dd").format(date)+".xls";
+                + guestId + " " + new SimpleDateFormat("yyyy-MM-dd").format(date)+".xlsx";
         headers.setContentDispositionFormData("attachment", filename);
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();

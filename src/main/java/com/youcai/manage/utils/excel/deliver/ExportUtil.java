@@ -1,13 +1,11 @@
 package com.youcai.manage.utils.excel.deliver;
 
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-
-import java.util.Arrays;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 
 public class ExportUtil {
@@ -22,15 +20,15 @@ public class ExportUtil {
         }
     }
 
-    public static Row createRow(int rowNumber, HSSFSheet sheet){
-        HSSFWorkbook workbook = sheet.getWorkbook();
+    public static Row createRow(int rowNumber, XSSFSheet sheet){
+        XSSFWorkbook workbook = sheet.getWorkbook();
         Row row = sheet.createRow(rowNumber);
         row.setHeight(ROW_HEIGHT);
         for (int i=0; i<COL_COUNT; i++){
             CellStyle cellStyle = workbook.createCellStyle();
             setDefaultCellStyle(cellStyle);
             setBorder(cellStyle);
-            HSSFFont font = workbook.createFont();
+            XSSFFont font = workbook.createFont();
             setDefaultFont(font);
             cellStyle.setFont(font);
             row.createCell(i).setCellStyle(cellStyle);
@@ -38,13 +36,13 @@ public class ExportUtil {
         return row;
     }
 
-    public static Row createRowNoBorder(int rowNumber, HSSFSheet sheet){
-        HSSFWorkbook workbook = sheet.getWorkbook();
+    public static Row createRowNoBorder(int rowNumber, XSSFSheet sheet){
+        XSSFWorkbook workbook = sheet.getWorkbook();
         Row row = sheet.createRow(rowNumber);
         row.setHeight(ROW_HEIGHT);
         CellStyle cellStyle = workbook.createCellStyle();
         setDefaultCellStyle(cellStyle);
-        HSSFFont font = workbook.createFont();
+        XSSFFont font = workbook.createFont();
         setDefaultFont(font);
         cellStyle.setFont(font);
         for (int i=0; i<COL_COUNT; i++){
@@ -60,7 +58,7 @@ public class ExportUtil {
         cellStyle.setBorderRight(CellStyle.BORDER_THIN);
     }
 
-    private static void setDefaultFont(HSSFFont font){
+    private static void setDefaultFont(XSSFFont font){
         font.setFontName(FONT_NAME);
         font.setFontHeightInPoints((short) 12);
     }

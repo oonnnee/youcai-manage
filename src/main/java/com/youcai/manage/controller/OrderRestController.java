@@ -125,16 +125,28 @@ public class OrderRestController {
         return ResultVOUtils.success(dates);
     }
 
+    // TODO 更新api
+    @GetMapping("/findStatesByGuestIdAndDate")
+    public ResultVO<List<String>> findStatesByGuestIdAndDate(
+            @RequestParam String guestId,
+            @RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+    ){
+        List<String> states = orderService.findStatesByGuestIdAndDate(guestId, date);
+        return ResultVOUtils.success(states);
+    }
+
+    // TODO 更新api
     @GetMapping("/findOneWithCategories")
     public ResultVO<List<CategoryVO>> findCategories(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String state
     ){
         /*------------ 1.查询数据 -------------*/
         /*--- 产品大类数据 ---*/
         List<Category> categories = categoryService.findAll();
         /*--- 采购数据 ---*/
-        List<Order> orders = orderService.findByIdGuestIdAndIdDate(guestId, date);
+        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
         /*--- 产品数据 ---*/
         Map<String, Product> productMap = productService.findMap();
         /*------------ 2.数据拼装 -------------*/
@@ -163,15 +175,6 @@ public class OrderRestController {
         }
         /*------------ 3.返回 -------------*/
         return ResultVOUtils.success(categoryVOS);
-    }
-
-    @PostMapping("/delete")
-    public ResultVO delete(
-            @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
-        orderService.delete(guestId, date);
-        return ResultVOUtils.success();
     }
 
 }

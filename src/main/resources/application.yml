@@ -16,5 +16,5 @@ security:
   basic:
     enabled: false
 img:
-  location: /home/youcai/image/
+  location: /product/youcai/back/image
 #  location: /Users/macos/tmp/youcai/image

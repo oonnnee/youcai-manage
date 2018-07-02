@@ -122,8 +122,8 @@ public class DeliverServiceImpl implements DeliverService {
         Export export = new Export();
         /*------------ 客户名 -------------*/
         export.setGuestName(guestService.findOne(guestId).getName());
-        /*------------ 司机名 -------------*/
-        export.setDriverName(driverService.findOne(driverId).getName());
+        /*------------ 司机 -------------*/
+        export.setDriver(driverService.findOne(driverId));
         /*------------ 日期 -------------*/
         export.setDate(date);
         /*------------ 产品&送货单金额 -------------*/

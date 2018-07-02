@@ -11,6 +11,8 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -39,9 +41,9 @@ public class OrderController {
     ) throws IOException {
         Export export = orderService.getExcelExport(guestId, date);
         // create a new workbook
-        HSSFWorkbook wb = new HSSFWorkbook();
+        XSSFWorkbook wb = new XSSFWorkbook();
         // create a sheet
-        HSSFSheet sheet = wb.createSheet();
+        XSSFSheet sheet = wb.createSheet();
         // Row Cell CellStyle
         Row row = null;
         Cell cell = null;
@@ -89,7 +91,7 @@ public class OrderController {
         /*------------ 写入，返回 -------------*/
         HttpHeaders headers = new HttpHeaders();
         String filename = new String("采购单 ".getBytes("UTF-8"), "iso-8859-1")
-                + guestId + " " + new SimpleDateFormat("yyyy-MM-dd").format(date)+".xls";
+                + guestId + " " + new SimpleDateFormat("yyyy-MM-dd").format(date)+".xlsx";
         headers.setContentDispositionFormData("attachment", filename);
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         ByteArrayOutputStream outByteStream = new ByteArrayOutputStream();

@@ -5,6 +5,7 @@ import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.excel.order.Export;
 import com.youcai.manage.dto.excel.order.ProductExport;
+import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.repository.OrderRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
@@ -48,14 +49,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<Order> findByIdGuestIdAndIdDate(String guestId, Date date) {
-        return orderRepository.findByIdGuestIdAndIdOdate(guestId, date);
+    public List<String> findStatesByGuestIdAndDate(String guestId, Date date) {
+        List<String> states = orderRepository.findDistinctIdStateByIdGuestIdAndIdOdate(guestId, date);
+        return states;
     }
 
     @Override
-    @Transactional
-    public void delete(String guestId, Date date) {
-        orderRepository.deleteByIdGuestIdAndIdOdate(guestId, date);
+    public List<Order> findByIdGuestIdAndIdDateAndIdState(String guestId, Date date, String state) {
+        return orderRepository.findByIdGuestIdAndIdOdateAndIdState(guestId, date, state);
     }
 
     @Override
@@ -86,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
         /*------------ 产品&采购单金额 -------------*/
         List<ProductExport> productExports = new ArrayList<>();
         BigDecimal amount = BigDecimal.ZERO;
-        List<Order> orders = this.findByIdGuestIdAndIdDate(guestId, date);
+        List<Order> orders = this.findByIdGuestIdAndIdDateAndIdState(guestId, date, OrderEnum.OK.getState());
         Map<String, Product> productMap = productService.findMap();
         int index = 1;
         for (Order order : orders){
@@ -110,4 +111,5 @@ public class OrderServiceImpl implements OrderService {
         export.setAmount(amount);
         return export;
     }
+
 }
