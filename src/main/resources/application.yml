@@ -16,5 +16,6 @@ security:
   basic:
     enabled: false
 img:
-  location: /product/youcai/back/image
+  location: /youcai/back/image
 #  location: /Users/macos/tmp/youcai/image
+#  location: D:\Developers\files\youcai
