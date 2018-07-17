@@ -16,6 +16,7 @@ import com.youcai.manage.utils.excel.order.ExportUtil;
 import com.youcai.manage.vo.ResultVO;
 import com.youcai.manage.vo.order.CategoryVO;
 import com.youcai.manage.vo.order.ListVO;
+import com.youcai.manage.vo.order.OrdersVO;
 import com.youcai.manage.vo.order.ProductVO;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -34,6 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import com.youcai.manage.dataobject.Order;
 
@@ -41,6 +43,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/order")
@@ -175,6 +178,43 @@ public class OrderRestController {
         }
         /*------------ 3.返回 -------------*/
         return ResultVOUtils.success(categoryVOS);
+    }
+
+    //  TODO 更新api
+    @GetMapping("/findOne")
+    public ResultVO findOne(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String state
+    ){
+        Guest guest = guestService.findOne(guestId);
+        if (guest == null){
+            return ResultVOUtils.error("未查询到此客户");
+        }
+        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
+        if (CollectionUtils.isEmpty(orders)){
+            return ResultVOUtils.error("未查询到此采购单");
+        }
+        Map<String, Product> productMap = productService.findMap();
+
+        OrdersVO ordersVO = new OrdersVO();
+
+        List<ProductVO> products = orders.stream().map( e -> {
+                Product product = productMap.get(e.getId().getProductId());
+                return new ProductVO(
+                        product.getId(), product.getName(), product.getUnit(),
+                        e.getPrice(), e.getNum(), e.getAmount(), e.getNote()
+                );
+            }
+        ).collect(Collectors.toList());
+
+        ordersVO.setGuestId(guestId);
+        ordersVO.setDate(date);
+        ordersVO.setGuestName(guest.getName());
+        ordersVO.setState(state);
+        ordersVO.setProducts(products);
+
+        return ResultVOUtils.success(ordersVO);
     }
 
 }

@@ -34,7 +34,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         guest.setPwd(EDSUtils.encryptBasedDes(guest.getPwd()));
         Guest saveResult = guestRepository.save(guest);
         if (saveResult == null){
-            throw new ManageException(ResultEnum.MANAGE_GUEST_SAVE_ERROR);
+            throw new ManageException("新增客户失败");
         }
         return saveResult;
     }
@@ -49,7 +49,7 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         /*------------ 2.更新 -------------*/
         Guest updateResult = guestRepository.save(guest);
         if (updateResult == null){
-            throw new ManageException(ResultEnum.MANAGE_GUEST_UPDATE_ERROR);
+            throw new ManageException("更新客户失败");
         }
         /*------------ 3.结果处理 -------------*/
         /*------------ 4.返回结果 -------------*/

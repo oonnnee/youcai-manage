@@ -25,7 +25,7 @@ public class UploadRestController {
     @PostMapping("/image")
     public ResultVO<String> image(@RequestParam("upload_file") MultipartFile file) throws IOException {
         if (file.isEmpty() || StringUtils.isEmpty(file.getOriginalFilename())) {
-            throw new ManageException(ResultEnum.MANAGE_UPLOAD_IMAGE_EMPTY);
+            throw new ManageException("图片上传失败，图片不存在");
         }
         File directory = new File(location);
         if (!directory.exists()) {

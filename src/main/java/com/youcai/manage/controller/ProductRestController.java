@@ -132,4 +132,9 @@ public class ProductRestController {
     public ResultVO<Long> count(){
         return ResultVOUtils.success(productService.countAll());
     }
+
+    @GetMapping("/findList")
+    public ResultVO list(){
+        return ResultVOUtils.success(productService.findAll());
+    }
 }

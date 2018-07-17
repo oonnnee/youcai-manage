@@ -1,4 +1,4 @@
-package com.youcai.manage.vo.order;
+package com.youcai.manage.vo.pricelist;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,11 +10,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductVO {
+
     private String id;
+
     private String name;
-    private String unit;
+
     private BigDecimal price;
-    private BigDecimal num;
-    private BigDecimal amount;
+
     private String note;
 }

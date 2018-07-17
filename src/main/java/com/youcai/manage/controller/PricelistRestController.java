@@ -5,6 +5,7 @@ import com.youcai.manage.dto.PricelistDTO;
 import com.youcai.manage.dto.excel.pricelist.CategoryExport;
 import com.youcai.manage.dto.excel.pricelist.Export;
 import com.youcai.manage.dto.excel.pricelist.ProductExport;
+import com.youcai.manage.dto.pricelist.ProductDTO;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.CategoryService;
@@ -17,6 +18,8 @@ import com.youcai.manage.utils.excel.pricelist.ExportUtil;
 import com.youcai.manage.vo.*;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.youcai.manage.vo.pricelist.PricelistsVO;
+import com.youcai.manage.vo.pricelist.ProductVO;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -32,6 +35,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
@@ -132,16 +136,16 @@ public class PricelistRestController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
             @RequestParam String products
     ){
-        List<PricelistDTO> pricelistDTOS = new ArrayList<>();
+        List<ProductDTO> productDTOS;
         try {
-            pricelistDTOS = new Gson().fromJson(products,
-                    new TypeToken<List<PricelistDTO>>() {
+            productDTOS = new Gson().fromJson(products,
+                    new TypeToken<List<ProductDTO>>() {
                     }.getType());
         } catch (Exception e) {
-            throw new ManageException(ResultEnum.MANAGE_PRICELIST_SAVE_JSON_PARSE_ERROR);
+            throw new ManageException("新增或更新报价失败，产品json解析错误");
         }
-        List<Pricelist> pricelists = pricelistDTOS.stream().map(e ->
-                new Pricelist(new PricelistKey(date, guestId, e.getProductId()),
+        List<Pricelist> pricelists = productDTOS.stream().map(e ->
+                new Pricelist(new PricelistKey(date, guestId, e.getId()),
                         e.getPrice(), e.getNote())
         ).collect(Collectors.toList());
         pricelistService.save(pricelists);
@@ -157,6 +161,7 @@ public class PricelistRestController {
         return ResultVOUtils.success();
     }
 
+    /*
     @GetMapping("/findOne")
     public ResultVO find(
             @RequestParam String guestId,
@@ -187,6 +192,7 @@ public class PricelistRestController {
 
         return ResultVOUtils.success(pricelistVO);
     }
+    */
 
     @GetMapping("/findDatesByGuestId")
     public ResultVO<List<Date>> findDatesByGuestId(
@@ -233,4 +239,35 @@ public class PricelistRestController {
         return ResultVOUtils.success(findByGuestIdAndPdateWithCategoryVOS);
     }
 
+    @GetMapping("/findOne")
+    public ResultVO findOne(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+    ){
+        Guest guest = guestService.findOne(guestId);
+        if (guest == null){
+            return ResultVOUtils.error("未查询到此客户");
+        }
+        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
+        if (CollectionUtils.isEmpty(pricelists)){
+            return ResultVOUtils.error("未查询到此报价");
+        }
+        Map<String, Product> productMap = productService.findMap();
+
+        PricelistsVO pricelistsVO = new PricelistsVO();
+
+        List<ProductVO> products = pricelists.stream().map( e ->
+                new ProductVO(
+                        e.getId().getProductId(), productMap.get(e.getId().getProductId()).getName(),
+                        e.getPrice(), e.getNote()
+                )
+        ).collect(Collectors.toList());
+
+        pricelistsVO.setGuestId(guestId);
+        pricelistsVO.setDate(date);
+        pricelistsVO.setGuestName(guest.getName());
+        pricelistsVO.setProducts(products);
+
+        return ResultVOUtils.success(pricelistsVO);
+    }
 }

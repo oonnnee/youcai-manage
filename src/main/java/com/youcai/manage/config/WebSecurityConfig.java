@@ -46,7 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     public void onAuthenticationFailure(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
                         httpServletResponse.setContentType("application/json;charset=utf-8");
 
-                        ResultVO error = ResultVOUtils.error(ResultEnum.MANAGE_LOGIN_ERROR);
+                        ResultVO error = ResultVOUtils.error(ResultEnum.ERROR.getCode(), "账号或密码错误");
                         httpServletResponse.getWriter().write(new Gson().toJson(error));
                     }
                 })
@@ -80,7 +80,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             public void commence(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, AuthenticationException e) throws IOException, ServletException {
                 httpServletResponse.setContentType("application/json;charset=utf-8");
 
-                ResultVO error = ResultVOUtils.error(ResultEnum.MANAGE_NO_LOGIN);
+                ResultVO error = ResultVOUtils.error(ResultEnum.NO_LOGIN.getCode(), "未登录");
                 httpServletResponse.getWriter().write(new Gson().toJson(error));
             }
         });

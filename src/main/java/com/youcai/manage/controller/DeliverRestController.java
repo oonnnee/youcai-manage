@@ -8,15 +8,13 @@ import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.dto.excel.deliver.ProductExport;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
-import com.youcai.manage.service.CategoryService;
-import com.youcai.manage.service.DeliverService;
-import com.youcai.manage.service.DriverService;
-import com.youcai.manage.service.ProductService;
+import com.youcai.manage.service.*;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.utils.comparator.DateComparator;
 import com.youcai.manage.utils.excel.deliver.ExportUtil;
 import com.youcai.manage.vo.ResultVO;
 import com.youcai.manage.vo.deliver.CategoryVO;
+import com.youcai.manage.vo.deliver.DeliversVO;
 import com.youcai.manage.vo.deliver.ListVO;
 import com.youcai.manage.vo.deliver.ProductVO;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -36,6 +34,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayOutputStream;
@@ -55,6 +54,8 @@ public class DeliverRestController {
     private CategoryService categoryService;
     @Autowired
     private ProductService productService;
+    @Autowired
+    private GuestService guestService;
 
     @GetMapping("/findPage")
     public ResultVO<Page<ListVO>> list(
@@ -176,7 +177,7 @@ public class DeliverRestController {
                     new TypeToken<List<ProductDTO>>() {
                     }.getType());
         } catch (Exception e) {
-            throw new ManageException(ResultEnum.MANAGE_DELIVER_SAVE_JSON_PARSE_ERROR);
+            throw new ManageException("新增送货单失败，产品json解析错误");
         }
         List<Deliver> delivers = productDTOS.stream().map(e ->
                 new Deliver(new DeliverKey(driverId, guestId, date, e.getId()),
@@ -184,6 +185,48 @@ public class DeliverRestController {
         ).collect(Collectors.toList());
         deliverService.save(delivers);
         return ResultVOUtils.success();
+    }
+
+    //  TODO 更新api
+    @GetMapping("/findOne")
+    public ResultVO findOne(
+            @RequestParam String guestId,
+            @RequestParam Integer driverId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+    ){
+        Guest guest = guestService.findOne(guestId);
+        if (guest == null){
+            return ResultVOUtils.error("未查询到此客户");
+        }
+        Driver driver = driverService.findOne(driverId);
+        if (driver == null){
+            return ResultVOUtils.error("未查询到此司机");
+        }
+        List<Deliver> delivers = deliverService.findByGuestIdAndDriverIdAndDate(guestId, driverId, date);
+        if (CollectionUtils.isEmpty(delivers)){
+            return ResultVOUtils.error("未查询到此送货单");
+        }
+        Map<String, Product> productMap = productService.findMap();
+
+        DeliversVO deliversVO = new DeliversVO();
+
+        List<ProductVO> products = delivers.stream().map( e -> {
+                    Product product = productMap.get(e.getId().getProductId());
+            return new ProductVO(
+                            product.getId(), product.getName(), product.getUnit(),
+                            e.getPrice(), e.getNum(), e.getAmount(), e.getNote()
+                    );
+                }
+        ).collect(Collectors.toList());
+
+        deliversVO.setGuestId(guestId);
+        deliversVO.setGuestName(guest.getName());
+        deliversVO.setDriverId(driverId);
+        deliversVO.setDriverName(driver.getName());
+        deliversVO.setDate(date);
+        deliversVO.setProducts(products);
+
+        return ResultVOUtils.success(deliversVO);
     }
 
 }

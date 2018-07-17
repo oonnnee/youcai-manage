@@ -13,11 +13,12 @@ public class ResultVOUtils {
         return new ResultVO(0, "成功", null);
     }
 
+    public static ResultVO error(String msg){
+        return new ResultVO(ResultEnum.ERROR.getCode(), msg, null);
+    }
+
     public static ResultVO error(Integer code, String msg){
         return new ResultVO(code, msg, null);
     }
 
-    public static ResultVO error(ResultEnum resultEnum){
-        return new ResultVO(resultEnum.getCode(), resultEnum.getMsg(), null);
-    }
 }

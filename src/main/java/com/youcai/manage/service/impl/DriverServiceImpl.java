@@ -27,7 +27,7 @@ public class DriverServiceImpl implements DriverService {
     public Driver save(Driver driver) {
         Driver saveResult = driverRepository.save(driver);
         if (saveResult == null){
-            throw new ManageException(ResultEnum.MANAGE_DRIVER_SAVE_ERROR);
+            throw new ManageException("新增司机失败");
         }
         return saveResult;
     }
@@ -42,11 +42,11 @@ public class DriverServiceImpl implements DriverService {
     @Transactional
     public Driver update(Driver driver) {
         if (driver.getId() == null){
-            throw new ManageException(ResultEnum.MANAGE_DRIVER_UPDATE_NULL_ID);
+            throw new ManageException("更新司机失败，司机id为空");
         }
         Driver updateResult = driverRepository.save(driver);
         if (updateResult == null){
-            throw new ManageException(ResultEnum.MANAGE_DRIVER_SAVE_ERROR);
+            throw new ManageException("更新司机失败");
         }
         return updateResult;
     }

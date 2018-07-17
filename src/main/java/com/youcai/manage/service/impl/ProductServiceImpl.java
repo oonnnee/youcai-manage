@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
         /*------------ 2.保存 -------------*/
         Product saveResult = productRepository.save(product);
         if (saveResult == null){
-            throw new ManageException(ResultEnum.MANAGE_PRODUCT_SAVE_ERROR);
+            throw new ManageException("新增产品失败");
         }
         return saveResult;
     }
@@ -50,7 +50,7 @@ public class ProductServiceImpl implements ProductService {
     public Product update(Product product) {
         Product updateResult = productRepository.save(product);
         if (updateResult == null){
-            throw new ManageException(ResultEnum.MANAGE_PRODUCT_UPDATE_ERROR);
+            throw new ManageException("更新产品失败");
         }
         return updateResult;
     }

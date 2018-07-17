@@ -11,7 +11,6 @@ public class PricelistDTO {
 
     private String productName;
 
-    /*--- 产品大类编码 ---*/
     private String productCode;
 
     private String productUnit;
