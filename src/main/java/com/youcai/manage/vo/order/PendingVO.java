@@ -1,19 +1,19 @@
-package com.youcai.manage.vo.deliver;
+package com.youcai.manage.vo.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
-import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ListVO {
+public class PendingVO {
 
     private String guestId;
-    private String guestName;
-    private Set<Date> dates;
+    private Date date;
+    private String state;
 
+    private String guestName;
 }

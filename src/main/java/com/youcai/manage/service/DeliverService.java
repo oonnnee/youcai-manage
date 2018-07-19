@@ -13,11 +13,11 @@ import java.util.Set;
 
 public interface DeliverService {
     List<Deliver> findByIdGuestId(String guestId);
-    List<Deliver> findByGuestIdAndDriverIdAndDate(String guestId, Integer driverId, Date date);
-    Set<ListVO> findListVOSet();
-    Set<ListVO> findListVOSetByGuestName(String guestName);
-    Set<ListVO> findListVOSetByDriverName(String driverName);
-    void delete(String guestId, Integer driverId, Date date);
-    void save(List<Deliver> delivers);
-    Export getExcelExport(String guestId, Integer driverId, Date date);
+    List<Deliver> findByGuestIdAndDate(String guestId, Date date);
+//    void delete(String guestId, Integer driverId, Date date);
+    void save(List<Deliver> delivers, String orderGuestId, Date orderDate);
+    Export getExcelExport(String guestId, Date date);
+    Page<Guest> findGuestPage(Pageable pageable, String guestName);
+    List<Date> findDatesByGuestId(String guestId);
+
 }

@@ -2,8 +2,6 @@ package com.youcai.manage.repository;
 
 import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dataobject.OrderKey;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -27,4 +25,14 @@ public interface OrderRepository extends JpaRepository<Order, OrderKey> {
 
     @Query(value = "select distinct guest_id from orders where guest_id like ?1", nativeQuery = true)
     List<String> findDistinctIdGuestId(String guestId);
+
+    @Query(value = "select count(distinct state) from orders where state like ?1", nativeQuery = true)
+    Long countDistinctByIdStateLike(String state);
+
+    @Query(value = "select distinct guest_id,odate,state from orders where state like ?1", nativeQuery = true)
+    List<Object[]> findDistinctOdateAndGuestIdAndStateByStateLike(String state);
+
+    @Modifying
+    @Query(value = "update orders set state=?4 where guest_id=?1 and odate=?2 and state=?3", nativeQuery = true)
+    void updateState(String guestId, Date date, String oldState, String newState);
 }

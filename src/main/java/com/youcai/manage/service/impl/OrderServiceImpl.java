@@ -10,6 +10,7 @@ import com.youcai.manage.repository.OrderRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.vo.order.PendingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -87,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
         /*------------ 产品&采购单金额 -------------*/
         List<ProductExport> productExports = new ArrayList<>();
         BigDecimal amount = BigDecimal.ZERO;
-        List<Order> orders = this.findByIdGuestIdAndIdDateAndIdState(guestId, date, OrderEnum.OK.getState());
+        List<Order> orders = this.findByIdGuestIdAndIdDateAndIdState(guestId, date, OrderEnum.NEW.getState());
         Map<String, Product> productMap = productService.findMap();
         int index = 1;
         for (Order order : orders){
@@ -112,4 +113,57 @@ public class OrderServiceImpl implements OrderService {
         return export;
     }
 
+    @Override
+    public Long countByState(String state) {
+        Long count = 0L;
+        if (state.equals(OrderEnum.PENDING.getState())){
+            String[] stateHeads = {OrderEnum.NEW.getState()+"%", OrderEnum.BACKING.getState()+"%"};
+            for (int i=0; i<stateHeads.length; i++){
+                count += orderRepository.countDistinctByIdStateLike(stateHeads[i]);
+            }
+        } else {
+            String stateHead = state + "%";
+            count += orderRepository.countDistinctByIdStateLike(stateHead);
+        }
+        return count;
+    }
+
+    @Override
+    public List<PendingVO> findPendingList(String state) {
+        List<PendingVO> pendingVOS = new ArrayList<>();
+        List<Object[]> objects;
+        Map<String, String> guestMap = guestService.findMap();
+        if (state.equals(OrderEnum.PENDING.getState())){
+            String[] stateHeads = {OrderEnum.NEW.getState()+"%", OrderEnum.BACKING.getState()+"%"};
+            for (int i=0; i<stateHeads.length; i++){
+                objects = orderRepository.findDistinctOdateAndGuestIdAndStateByStateLike(stateHeads[i]);
+                for (Object[] objs : objects){
+                    String guestId = (String) objs[0];
+                    Date date = (Date) objs[1];
+                    String state2 = (String) objs[2];
+                    String guestName = guestMap.get(guestId);
+                    PendingVO pendingVO = new PendingVO(guestId, date, state2, guestName);
+                    pendingVOS.add(pendingVO);
+                }
+            }
+        } else {
+            String stateHead = state + "%";
+            objects = orderRepository.findDistinctOdateAndGuestIdAndStateByStateLike(stateHead);
+            for (Object[] objs : objects){
+                String guestId = (String) objs[0];
+                Date date = (Date) objs[1];
+                String state2 = (String) objs[2];
+                String guestName = guestMap.get(guestId);
+                PendingVO pendingVO = new PendingVO(guestId, date, state2, guestName);
+                pendingVOS.add(pendingVO);
+            }
+        }
+        return pendingVOS;
+    }
+
+    @Override
+    @Transactional
+    public void updateState(String guestId, Date date, String oldState, String newState) {
+        orderRepository.updateState(guestId, date, oldState, newState);
+    }
 }

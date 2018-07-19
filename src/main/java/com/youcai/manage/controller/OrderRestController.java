@@ -1,47 +1,28 @@
 package com.youcai.manage.controller;
 
-import com.google.gson.Gson;
 import com.youcai.manage.dataobject.Category;
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dataobject.Product;
-import com.youcai.manage.dto.excel.order.Export;
-import com.youcai.manage.dto.excel.order.ProductExport;
+import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.utils.OrderUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.utils.comparator.DateComparator;
-import com.youcai.manage.utils.excel.order.ExportUtil;
 import com.youcai.manage.vo.ResultVO;
-import com.youcai.manage.vo.order.CategoryVO;
-import com.youcai.manage.vo.order.ListVO;
-import com.youcai.manage.vo.order.OrdersVO;
-import com.youcai.manage.vo.order.ProductVO;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.util.CellRangeAddress;
+import com.youcai.manage.vo.order.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import com.youcai.manage.dataobject.Order;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -217,4 +198,33 @@ public class OrderRestController {
         return ResultVOUtils.success(ordersVO);
     }
 
+    // TODO update api
+    @GetMapping("countByState")
+    public ResultVO countByState(@RequestParam String state){
+        Long count = orderService.countByState(state);
+        return ResultVOUtils.success(count);
+    }
+
+    // TODO update api
+    @GetMapping("findPendingList")
+    public ResultVO findPendingList(
+            @RequestParam(required = false) String state
+    ){
+        if (state == null){
+            state = OrderEnum.PENDING.getState();
+        }
+        List<PendingVO> pendingVOS = orderService.findPendingList(state);
+        return ResultVOUtils.success(pendingVOS);
+    }
+
+    // TODO update api
+    @PostMapping("/back")
+    public ResultVO back(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String state
+    ){
+        orderService.updateState(guestId, date, state, OrderUtils.getStateBacked());
+        return ResultVOUtils.success();
+    }
 }

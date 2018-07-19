@@ -9,6 +9,7 @@ import com.youcai.manage.dto.excel.deliver.ProductExport;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.*;
+import com.youcai.manage.utils.DeliverUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.utils.comparator.DateComparator;
 import com.youcai.manage.utils.excel.deliver.ExportUtil;
@@ -60,21 +61,6 @@ public class DeliverRestController {
     @GetMapping("/findPage")
     public ResultVO<Page<ListVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
-    ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
-        Set<ListVO> listVOSet = deliverService.findListVOSet();
-        return ResultVOUtils.success(getListVOPage(listVOSet, pageable));
-    }
-
-    @GetMapping("/findPageByGuestNameLike")
-    public ResultVO<Page<ListVO>> listByGuestNameLike(
-            @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestName
     ){
@@ -84,46 +70,31 @@ public class DeliverRestController {
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
         /*------------ 2.查询 -------------*/
-        Set<ListVO> listVOSet = deliverService.findListVOSetByGuestName(guestName);
-        return ResultVOUtils.success(getListVOPage(listVOSet, pageable));
-    }
-
-    @GetMapping("/findPageByDriverNameLike")
-    public ResultVO<Page<ListVO>> listByDriverNameLike(
-            @RequestParam(defaultValue = "0") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String driverName
-    ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
-        Set<ListVO> listVOSet = deliverService.findListVOSetByDriverName(driverName);
-        return ResultVOUtils.success(getListVOPage(listVOSet, pageable));
-    }
-
-    private Page<ListVO> getListVOPage(Set<ListVO> listVOSet, Pageable pageable){
+        Page<Guest> guestPage = deliverService.findGuestPage(pageable, guestName);
         List<ListVO> listVOS = new ArrayList<>();
-        for (ListVO l : listVOSet){
-            ListVO listVO = new ListVO(l);
+        for (Guest guest : guestPage.getContent()){
+            List<Deliver> delivers = deliverService.findByIdGuestId(guest.getId());
+            Set<Date> dates = new TreeSet<>(new DateComparator());
+            for (Deliver deliver : delivers){
+                dates.add(deliver.getId().getDdate());
+            }
+            ListVO listVO = new ListVO(guest.getId(), guest.getName(), dates);
             listVOS.add(listVO);
         }
-        return new PageImpl<>(listVOS, pageable, listVOS.size());
+        Page<ListVO> listVOPage = new PageImpl<ListVO>(listVOS, pageable, guestPage.getTotalElements());
+        return ResultVOUtils.success(listVOPage);
     }
 
     @GetMapping("/findOneWithCategories")
     public ResultVO<List<CategoryVO>> findCategories(
             @RequestParam String guestId,
-            @RequestParam Integer driverId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         /*------------ 1.查询数据 -------------*/
         /*--- 产品大类数据 ---*/
         List<Category> categories = categoryService.findAll();
         /*--- 送货数据 ---*/
-        List<Deliver> delivers = deliverService.findByGuestIdAndDriverIdAndDate(guestId, driverId, date);
+        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
         /*--- 产品数据 ---*/
         Map<String, Product> productMap = productService.findMap();
         /*------------ 2.数据拼装 -------------*/
@@ -154,21 +125,21 @@ public class DeliverRestController {
         return ResultVOUtils.success(categoryVOS);
     }
 
-    @PostMapping("/delete")
-    public ResultVO delete(
-            @RequestParam String guestId,
-            @RequestParam Integer driverId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
-        deliverService.delete(guestId, driverId, date);
-        return ResultVOUtils.success();
-    }
+//    @PostMapping("/delete")
+//    public ResultVO delete(
+//            @RequestParam String guestId,
+//            @RequestParam Integer driverId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+//    ){
+//        deliverService.delete(guestId, driverId, date);
+//        return ResultVOUtils.success();
+//    }
 
     @PostMapping("/save")
     public ResultVO save(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date orderDate,
             @RequestParam String guestId,
             @RequestParam Integer driverId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
             @RequestParam String products
     ){
         List<ProductDTO> productDTOS = new ArrayList<>();
@@ -180,10 +151,10 @@ public class DeliverRestController {
             throw new ManageException("新增送货单失败，产品json解析错误");
         }
         List<Deliver> delivers = productDTOS.stream().map(e ->
-                new Deliver(new DeliverKey(driverId, guestId, date, e.getId()),
+                new Deliver(new DeliverKey(driverId, guestId, new Date(), e.getId(), DeliverUtils.getStateDelivering()),
                         e.getPrice(), e.getNum(), e.getPrice().multiply(e.getNum()), e.getNote())
         ).collect(Collectors.toList());
-        deliverService.save(delivers);
+        deliverService.save(delivers, guestId, orderDate);
         return ResultVOUtils.success();
     }
 
@@ -191,20 +162,20 @@ public class DeliverRestController {
     @GetMapping("/findOne")
     public ResultVO findOne(
             @RequestParam String guestId,
-            @RequestParam Integer driverId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         Guest guest = guestService.findOne(guestId);
         if (guest == null){
             return ResultVOUtils.error("未查询到此客户");
         }
-        Driver driver = driverService.findOne(driverId);
-        if (driver == null){
-            return ResultVOUtils.error("未查询到此司机");
-        }
-        List<Deliver> delivers = deliverService.findByGuestIdAndDriverIdAndDate(guestId, driverId, date);
+        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
+
         if (CollectionUtils.isEmpty(delivers)){
             return ResultVOUtils.error("未查询到此送货单");
+        }
+        Driver driver = driverService.findOne(delivers.get(0).getId().getDriverId());
+        if (driver == null){
+            return ResultVOUtils.error("未查询到此司机");
         }
         Map<String, Product> productMap = productService.findMap();
 
@@ -221,12 +192,22 @@ public class DeliverRestController {
 
         deliversVO.setGuestId(guestId);
         deliversVO.setGuestName(guest.getName());
-        deliversVO.setDriverId(driverId);
+        deliversVO.setDriverId(driver.getId());
         deliversVO.setDriverName(driver.getName());
         deliversVO.setDate(date);
+        deliversVO.setState(delivers.get(0).getId().getState());
         deliversVO.setProducts(products);
 
         return ResultVOUtils.success(deliversVO);
     }
 
+
+    //  TODO 更新api
+    @GetMapping("/findDatesByGuestId")
+    public ResultVO<List<Date>> findDatesByGuestId(
+            @RequestParam String guestId
+    ){
+        List<Date> dates = deliverService.findDatesByGuestId(guestId);
+        return ResultVOUtils.success(dates);
+    }
 }

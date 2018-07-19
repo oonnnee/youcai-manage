@@ -7,15 +7,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public enum OrderEnum {
+public enum DeliverEnum {
 
     UN_KNOW("-1", "未知状态"),
-    ALL("0", "全部"), // NEW & BACKING & BACKED & DELIVERED
-    NEW("1", "新采购单"),
-    BACKING("2", "待退回"),
-    BACKED("3", "已退回"),
-    DELIVERED("4", "已发货"),
-    PENDING("5", "待处理") // NEW & BACKING
+    ALL("0", "全部"), // DELIVERING & FINISH
+    DELIVERING("1", "送货中"),
+    RECEIVE("2", "已收货"),
     ;
 
     private String state;

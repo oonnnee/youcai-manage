@@ -34,10 +34,9 @@ public class DeliverController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> orderExport(
             @RequestParam String guestId,
-            @RequestParam Integer driverId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ) throws IOException {
-        Export export = deliverService.getExcelExport(guestId, driverId, date);
+        Export export = deliverService.getExcelExport(guestId, date);
         // create a new workbook
         XSSFWorkbook wb = new XSSFWorkbook();
         // create a sheet

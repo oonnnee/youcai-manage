@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -63,5 +64,16 @@ public class OrderRepositoryTest {
     @Test
     public void findDistinctIdGuestId(){
         List<String> strings = orderRepository.findDistinctIdGuestId();
+    }
+
+    @Test
+    public void countDistinctByIdStateStartsWith(){
+        Long count = orderRepository.countDistinctByIdStateLike("1%");
+        System.out.println(count);
+    }
+
+    @Test
+    public void findByIdStateStartsWith(){
+        List orders = orderRepository.findDistinctOdateAndGuestIdAndStateByStateLike("1%");
     }
 }

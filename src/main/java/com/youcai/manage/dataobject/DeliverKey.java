@@ -26,4 +26,6 @@ public class DeliverKey implements Serializable {
     private Date ddate;
 
     private String productId;
+
+    private String state;
 }

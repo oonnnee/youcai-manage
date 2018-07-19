@@ -19,6 +19,8 @@ public class DeliversVO {
 
     private Date date;
 
+    private String state;
+
     @JsonProperty("products")
     private List<ProductVO> products;
 }
