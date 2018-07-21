@@ -99,4 +99,13 @@ public class PricelistServiceImpl implements PricelistService {
 
         return export;
     }
+
+    @Override
+    public boolean isGuestExist(String guestId) {
+        return pricelistRepository.find(guestId) != null;
+    }
+    @Override
+    public boolean isProductExist(String productId) {
+        return pricelistRepository.findWithProductId(productId) != null;
+    }
 }

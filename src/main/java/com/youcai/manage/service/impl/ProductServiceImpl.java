@@ -1,11 +1,14 @@
 package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Product;
-import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.ProductRepository;
+import com.youcai.manage.service.DeliverService;
+import com.youcai.manage.service.OrderService;
+import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.service.ProductService;
 import com.youcai.manage.utils.KeyUtils;
+import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,38 +24,55 @@ import java.util.Map;
 @Service
 public class ProductServiceImpl implements ProductService {
 
+    private void checkName(String name){
+        ManageUtils.ManageException(this.isNameRepeat(name), "此产品已存在");
+    }
+    private void checkName(String name, String id){
+        ManageUtils.ManageException(this.isNameRepeat(name, id), "此产品已存在");
+    }
+
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private PricelistService pricelistService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private DeliverService deliverService;
 
     @Override
     @Transactional
     public Product save(Product product) {
-        /*------------ 1.准备 -------------*/
-        // 生成产品id
+        checkName(product.getName());
+
         product.setId(KeyUtils.generate());
 
-        /*------------ 2.保存 -------------*/
         Product saveResult = productRepository.save(product);
-        if (saveResult == null){
-            throw new ManageException("新增产品失败");
-        }
+        ManageUtils.ManageException(saveResult, "添加产品失败，请稍后再试");
+
         return saveResult;
     }
 
     @Override
     @Transactional
-    public void delete(String id) {
-        productRepository.delete(id);
+    public Product update(Product product) {
+        checkName(product.getName(), product.getId());
+
+        Product updateResult = productRepository.save(product);
+        ManageUtils.ManageException(updateResult, "更新产品失败，请稍后再试");
+
+        return updateResult;
     }
 
     @Override
     @Transactional
-    public Product update(Product product) {
-        Product updateResult = productRepository.save(product);
-        if (updateResult == null){
-            throw new ManageException("更新产品失败");
-        }
-        return updateResult;
+    public void delete(String id) {
+        ManageUtils.ManageException(this.findOne(id), "删除产品失败\n原因：此产品不存在");
+        ManageUtils.ManageException(pricelistService.isProductExist(id), "删除产品失败\n原因：报价单中存在此产品");
+        ManageUtils.ManageException(orderService.isProductExist(id), "删除产品失败\n原因：采购单中存在此产品");
+        ManageUtils.ManageException(deliverService.isProductExist(id), "删除产品失败\n原因：送货单中存在此产品");
+
+        productRepository.delete(id);
     }
 
     @Override
@@ -107,5 +127,16 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Long countAll() {
         return productRepository.countBy();
+    }
+
+    @Override
+    public boolean isNameRepeat(String name) {
+        return productRepository.findByName(name) != null;
+    }
+    @Override
+    public boolean isNameRepeat(String name, String id) {
+        Product product = productRepository.findByName(name);
+        return product == null ?
+                false : !product.getId().equals(id);
     }
 }

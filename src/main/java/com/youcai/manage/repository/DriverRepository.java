@@ -10,4 +10,6 @@ import java.util.List;
 public interface DriverRepository extends JpaRepository<Driver, Integer> {
     Page<Driver> findByNameLike(String name, Pageable pageable);
     List<Driver> findByNameLike(String name);
+
+    Driver findByName(String name);
 }

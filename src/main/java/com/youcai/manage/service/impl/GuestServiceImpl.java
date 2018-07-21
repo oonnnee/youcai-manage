@@ -1,12 +1,15 @@
 package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Guest;
-import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.GuestRepository;
+import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.GuestService;
+import com.youcai.manage.service.OrderService;
+import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.utils.EDSUtils;
 import com.youcai.manage.utils.KeyUtils;
+import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,59 +27,83 @@ import java.util.Map;
 @Service
 public class GuestServiceImpl implements GuestService, UserDetailsService {
 
+    private void checkPhone(String phone){
+        ManageUtils.ManageException(this.isPhoneRepeat(phone), "该手机号已被注册");
+    }
+    private void checkPhone(String phone, String id){
+        ManageUtils.ManageException(this.isPhoneRepeat(phone, id), "该手机号已被注册");
+    }
+
     @Autowired
     private GuestRepository guestRepository;
+    @Autowired
+    private PricelistService pricelistService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private DeliverService deliverService;
 
     @Override
     @Transactional
     public Guest save(Guest guest) {
+        this.checkPhone(guest.getPhone());
+
         guest.setId(KeyUtils.generate());
         guest.setPwd(EDSUtils.encryptBasedDes(guest.getPwd()));
+
         Guest saveResult = guestRepository.save(guest);
-        if (saveResult == null){
-            throw new ManageException("新增客户失败");
-        }
+        ManageUtils.ManageException(saveResult, "新增客户失败，请稍后再试");
+
         return saveResult;
     }
 
     @Override
     @Transactional
     public Guest update(Guest guest) {
-        /*------------ 1.准备 -------------*/
-        // 填充密码
         Guest findResult = guestRepository.findOne(guest.getId());
+        ManageUtils.ManageException(findResult, "此客户不存在");
+
+        this.checkPhone(guest.getPhone(), guest.getId());
+
         guest.setPwd(findResult.getPwd());
-        /*------------ 2.更新 -------------*/
+
         Guest updateResult = guestRepository.save(guest);
-        if (updateResult == null){
-            throw new ManageException("更新客户失败");
-        }
-        /*------------ 3.结果处理 -------------*/
-        /*------------ 4.返回结果 -------------*/
+        ManageUtils.ManageException(updateResult, "更新客户失败，请稍后再试");
+
         return updateResult;
     }
 
     @Override
     @Transactional
+    public void updatePwd(String id, String pwd) {
+        Guest findResult = guestRepository.findOne(id);
+        ManageUtils.ManageException(findResult, "此客户不存在");
+
+        findResult.setPwd(EDSUtils.encryptBasedDes(pwd));
+
+        ManageUtils.ManageException(guestRepository.save(findResult), "更新客户密码失败，请稍后再试");
+    }
+
+    @Override
+    @Transactional
     public void delete(String id) {
+        ManageUtils.ManageException(this.findOne(id), "删除客户失败\n原因：此客户不存在");
+        ManageUtils.ManageException(pricelistService.isGuestExist(id), "删除客户失败\n原因：报价单中存在此客户");
+        ManageUtils.ManageException(orderService.isGuestExist(id), "删除客户失败\n原因：采购单中存在此客户");
+        ManageUtils.ManageException(deliverService.isGuestExist(id), "删除客户失败\n原因：送货单中存在此客户");
+
         guestRepository.delete(id);
     }
 
     @Override
     public Guest findOne(String id) {
-        /*------------ 1.查询 -------------*/
         Guest result = guestRepository.findOne(id);
-        /*------------ 2.结果处理 -------------*/
-        /*------------ 3.返回结果 -------------*/
         return result;
     }
 
     @Override
     public Page<Guest> findAll(Pageable pageable) {
-        /*------------ 1.查询 -------------*/
         Page<Guest> guestPage = guestRepository.findAll(pageable);
-        /*------------ 2.结果处理 -------------*/
-        /*------------ 3.返回结果 -------------*/
         return guestPage;
     }
 
@@ -96,16 +123,6 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         }
         Page<Guest> guestPage = guestRepository.findByIdLike("%" + id + "%", pageable);
         return guestPage;
-    }
-
-    @Override
-    @Transactional
-    public void updatePwd(String id, String pwd) {
-        /*------------ 1.查询用户 -------------*/
-        Guest guest = guestRepository.findOne(id);
-        /*------------ 2.更新密码 -------------*/
-        guest.setPwd(EDSUtils.encryptBasedDes(pwd));
-        guestRepository.save(guest);
     }
 
     @Override
@@ -150,5 +167,16 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
             map.put(guest.getId(), guest.getName());
         }
         return map;
+    }
+
+    @Override
+    public boolean isPhoneRepeat(String phone) {
+        return guestRepository.findByPhone(phone)!=null;
+    }
+    @Override
+    public boolean isPhoneRepeat(String phone, String id) {
+        Guest guest = guestRepository.findByPhone(phone);
+        return guest == null ?
+                false : !guest.getId().equals(id);
     }
 }

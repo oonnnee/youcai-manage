@@ -2,6 +2,9 @@ package com.youcai.manage.utils;
 
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.vo.ResultVO;
+import org.springframework.util.CollectionUtils;
+
+import java.util.Collection;
 
 public class ResultVOUtils {
 
@@ -11,6 +14,16 @@ public class ResultVOUtils {
 
     public static ResultVO success(){
         return new ResultVO(0, "成功", null);
+    }
+
+    public static ResultVO success(Object object, String msg){
+        return object == null ?
+                ResultVOUtils.success(msg) : ResultVOUtils.success(object);
+    }
+
+    public static ResultVO success(Collection collection, String msg){
+        return CollectionUtils.isEmpty(collection) ?
+                ResultVOUtils.success(msg) : ResultVOUtils.success(collection);
     }
 
     public static ResultVO error(String msg){

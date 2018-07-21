@@ -4,7 +4,9 @@ import com.youcai.manage.dataobject.Driver;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.DriverRepository;
+import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.DriverService;
+import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,47 +21,64 @@ import java.util.Map;
 @Service
 public class DriverServiceImpl implements DriverService {
 
+    private void checkName(String name){
+        ManageUtils.ManageException(this.isNameRepeat(name), "此司机已存在");
+    }
+    private void checkName(String name, Integer id){
+        ManageUtils.ManageException(this.isNameRepeat(name, id), "此司机已存在");
+    }
+
     @Autowired
     private DriverRepository driverRepository;
+    @Autowired
+    private DeliverService deliverService;
 
     @Override
     @Transactional
     public Driver save(Driver driver) {
+        this.checkName(driver.getName());
+
         Driver saveResult = driverRepository.save(driver);
-        if (saveResult == null){
-            throw new ManageException("新增司机失败");
-        }
+        ManageUtils.ManageException(saveResult, "新增司机失败，请稍后再试");
+
         return saveResult;
     }
 
     @Override
     @Transactional
-    public void delete(Integer id) {
-        driverRepository.delete(id);
+    public Driver update(Driver driver) {
+        ManageUtils.ManageException(driverRepository.findOne(driver.getId()), "此司机不存在");
+
+        this.checkName(driver.getName(), driver.getId());
+
+        Driver updateResult = driverRepository.save(driver);
+        ManageUtils.ManageException(updateResult, "更新司机信息失败，请稍后再试");
+
+        return updateResult;
     }
+
 
     @Override
     @Transactional
-    public Driver update(Driver driver) {
-        if (driver.getId() == null){
-            throw new ManageException("更新司机失败，司机id为空");
-        }
-        Driver updateResult = driverRepository.save(driver);
-        if (updateResult == null){
-            throw new ManageException("更新司机失败");
-        }
-        return updateResult;
+    public void delete(Integer id) {
+        ManageUtils.ManageException(driverRepository.findOne(id), "删除失败\n原因：此司机不存在");
+        ManageUtils.ManageException(deliverService.isDriverExist(id), "删除失败\n原因：送货单中存在此司机");
+
+        driverRepository.delete(id);
     }
+
 
     @Override
     public Driver findOne(Integer id) {
         Driver findResult = driverRepository.findOne(id);
+
         return findResult;
     }
 
     @Override
     public Page<Driver> list(Pageable pageable) {
         Page<Driver> driverPage = driverRepository.findAll(pageable);
+
         return driverPage;
     }
 
@@ -68,6 +87,7 @@ public class DriverServiceImpl implements DriverService {
         if (StringUtils.isEmpty(name)){
             return driverRepository.findAll(pageable);
         }
+
         return driverRepository.findByNameLike("%"+name+"%", pageable);
     }
 
@@ -99,5 +119,16 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public Long countAll() {
         return driverRepository.count();
+    }
+
+    @Override
+    public boolean isNameRepeat(String name) {
+        return driverRepository.findByName(name) != null;
+    }
+    @Override
+    public boolean isNameRepeat(String name, Integer id) {
+        Driver driver = driverRepository.findByName(name);
+        return driver == null ?
+                false : !driver.getId().equals(id);
     }
 }

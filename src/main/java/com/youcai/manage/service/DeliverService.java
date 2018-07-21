@@ -20,4 +20,7 @@ public interface DeliverService {
     Page<Guest> findGuestPage(Pageable pageable, String guestName);
     List<Date> findDatesByGuestId(String guestId);
 
+    boolean isGuestExist(String guestId);
+    boolean isProductExist(String productId);
+    boolean isDriverExist(Integer driverId);
 }

@@ -1,5 +1,8 @@
 package com.youcai.manage.config;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.GsonBuilder;
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.service.impl.GuestServiceImpl;
@@ -47,6 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         httpServletResponse.setContentType("application/json;charset=utf-8");
 
                         ResultVO error = ResultVOUtils.error(ResultEnum.ERROR.getCode(), "账号或密码错误");
+
                         httpServletResponse.getWriter().write(new Gson().toJson(error));
                     }
                 })
@@ -56,9 +60,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         httpServletResponse.setContentType("application/json;charset=utf-8");
 
                         Guest guest = (Guest) authentication.getPrincipal();
-                        guest.setPwd(null);
                         ResultVO success = ResultVOUtils.success(guest);
-                        httpServletResponse.getWriter().write(new Gson().toJson(success));
+
+                        Gson gson = new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
+                            @Override
+                            public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+                                return fieldAttributes.getName().equals("pwd");
+                            }
+
+                            @Override
+                            public boolean shouldSkipClass(Class<?> aClass) {
+                                return false;
+                            }
+                        }).create();
+                        httpServletResponse.getWriter().write(gson.toJson(success));
                     }
                 })
             .and()

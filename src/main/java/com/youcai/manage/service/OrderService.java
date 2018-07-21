@@ -23,4 +23,7 @@ public interface OrderService {
     Long countByState(String state);
     List<PendingVO> findPendingList(String state);
     void updateState(String guestId, Date date, String oldState, String newState);
+
+    boolean isGuestExist(String guestId);
+    boolean isProductExist(String productId);
 }

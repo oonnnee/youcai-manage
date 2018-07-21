@@ -26,4 +26,7 @@ public interface DriverService {
     Map<Integer, String> findMap();
     Map<Integer, String> findMapByNameLike(String name);
     Long countAll();
+
+    boolean isNameRepeat(String name);
+    boolean isNameRepeat(String name, Integer id);
 }

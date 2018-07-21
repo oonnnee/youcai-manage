@@ -23,4 +23,7 @@ public interface PricelistService {
     List<Date> findPdatesByGuestId(String guestId);
 
     Export getExcelExport(String guestId, Date pdate);
+
+    boolean isGuestExist(String guestId);
+    boolean isProductExist(String productId);
 }

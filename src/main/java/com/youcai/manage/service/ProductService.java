@@ -27,4 +27,7 @@ public interface ProductService {
     Map<String, Product> findMap();
 
     Long countAll();
+
+    boolean isNameRepeat(String name);
+    boolean isNameRepeat(String name, String id);
 }

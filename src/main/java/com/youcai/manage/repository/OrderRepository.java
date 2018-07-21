@@ -35,4 +35,9 @@ public interface OrderRepository extends JpaRepository<Order, OrderKey> {
     @Modifying
     @Query(value = "update orders set state=?4 where guest_id=?1 and odate=?2 and state=?3", nativeQuery = true)
     void updateState(String guestId, Date date, String oldState, String newState);
+
+    @Query(value = "select 1 from orders where guest_id = ?1 limit 1", nativeQuery = true)
+    String find(String guestId);
+    @Query(value = "select 1 from orders where product_id = ?1 limit 1", nativeQuery = true)
+    String findWithProductId(String productId);
 }

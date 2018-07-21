@@ -35,5 +35,9 @@ public interface GuestService {
     Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable);
 
     Map<String, String> findMap();
+
     Map<String, String> findMapByNameLike(String name);
+
+    boolean isPhoneRepeat(String phone);
+    boolean isPhoneRepeat(String phone, String id);
 }

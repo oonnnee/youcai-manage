@@ -104,4 +104,16 @@ public class DeliverServiceImpl implements DeliverService {
         return dates;
     }
 
+    @Override
+    public boolean isGuestExist(String guestId) {
+        return deliverRepository.find(guestId) != null;
+    }
+    @Override
+    public boolean isProductExist(String productId) {
+        return deliverRepository.findWithProductId(productId) != null;
+    }
+    @Override
+    public boolean isDriverExist(Integer driverId) {
+        return deliverRepository.findWithDriverId(driverId) != null;
+    }
 }

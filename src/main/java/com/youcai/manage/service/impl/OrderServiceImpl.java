@@ -166,4 +166,13 @@ public class OrderServiceImpl implements OrderService {
     public void updateState(String guestId, Date date, String oldState, String newState) {
         orderRepository.updateState(guestId, date, oldState, newState);
     }
+
+    @Override
+    public boolean isGuestExist(String guestId) {
+        return orderRepository.find(guestId) != null;
+    }
+    @Override
+    public boolean isProductExist(String productId) {
+        return orderRepository.findWithProductId(productId) != null;
+    }
 }

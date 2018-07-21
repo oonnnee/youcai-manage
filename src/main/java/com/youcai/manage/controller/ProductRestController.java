@@ -1,8 +1,11 @@
 package com.youcai.manage.controller;
 
 import com.youcai.manage.dataobject.Product;
+import com.youcai.manage.form.product.SaveForm;
+import com.youcai.manage.form.product.UpdateForm;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.vo.ProductVO;
 import com.youcai.manage.vo.ResultVO;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +35,27 @@ public class ProductRestController {
     private CategoryService categoryService;
 
     @PostMapping("/save")
-    public ResultVO<Product> save(Product product){
+    public ResultVO<Product> save(
+            @Valid SaveForm saveForm
+    ){
+        Product product = new Product();
+        BeanUtils.copyProperties(saveForm, product);
+
         Product saveResult = productService.save(product);
+
         return ResultVOUtils.success(saveResult);
+    }
+
+    @PostMapping("/update")
+    public ResultVO<Product> update(
+            @Valid UpdateForm updateForm
+    ){
+        Product product = new Product();
+        BeanUtils.copyProperties(updateForm, product);
+
+        Product updateResult = productService.update(product);
+
+        return ResultVOUtils.success(updateResult);
     }
 
     @PostMapping("/delete")
@@ -41,26 +63,22 @@ public class ProductRestController {
             @RequestParam String id
     ){
         productService.delete(id);
-        return ResultVOUtils.success();
-    }
 
-    @PostMapping("/update")
-    public ResultVO<Product> update(Product product){
-        Product updateResult = productService.update(product);
-        return ResultVOUtils.success(updateResult);
+        return ResultVOUtils.success("删除产品成功");
     }
 
     @GetMapping("/findOne")
     public ResultVO<ProductVO> findOne(
             @RequestParam String id
     ){
-        /*------------ 1.查询 -------------*/
         Product product = productService.findOne(id);
+        ManageUtils.ManageException(product, "此产品不存在");
+
         Map<String, String> categoryMap = categoryService.findAllInMap();
 
-        /*------------ 2.数据拼装 -------------*/
         ProductVO productVO = new ProductVO();
         BeanUtils.copyProperties(product, productVO);
+
         productVO.setPCodeName(categoryMap.get(productVO.getPCode()));
 
         return ResultVOUtils.success(productVO);
@@ -71,16 +89,13 @@ public class ProductRestController {
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
     ){
-        /*------------ 1.准备 -------------*/
         page = page<0 ? 0:page;
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
 
-        /*------------ 2.查询 -------------*/
         Page<Product> productPage = productService.findAll(pageable);
         Map<String, String> categoryMap = categoryService.findAllInMap();
 
-        /*------------ 3.数据拼装 -------------*/
         List<ProductVO> productVOS = productPage.getContent().stream().map(e -> {
             ProductVO productVO = new ProductVO();
             BeanUtils.copyProperties(e, productVO);
@@ -100,23 +115,19 @@ public class ProductRestController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false, name = "codes") String codeStr
     ){
-        /*------------ 1.准备 -------------*/
-        // 分页
         page = page<0 ? 0:page;
         size = size<=0 ? 10:size;
         Pageable pageable = new PageRequest(page, size);
-        // 产品大类编码列表
+
         List<String> codes = null;
         if (StringUtils.isEmpty(codeStr) == false){
             String[] codeArr = codeStr.split(",");
             codes = Arrays.asList(codeArr);
         }
 
-        /*------------ 2.查询 -------------*/
         Page<Product> productPage = productService.findBy(name, codes, pageable);
         Map<String, String> categoryMap = categoryService.findAllInMap();
 
-        /*------------ 3.数据拼装 -------------*/
         List<ProductVO> productVOS = productPage.getContent().stream().map(e -> {
             ProductVO productVO = new ProductVO();
             BeanUtils.copyProperties(e, productVO);

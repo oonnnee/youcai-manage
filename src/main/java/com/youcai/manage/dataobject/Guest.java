@@ -17,7 +17,7 @@ public class Guest implements UserDetails {
     @Id
     private String id;
 
-    /*--- 客户密码 ---*/
+    @JsonIgnore
     private String pwd;
 
     private String name;

@@ -21,4 +21,6 @@ public interface GuestRepository extends JpaRepository<Guest, String> {
     Page<Guest> findByIdIn(List<String> ids, Pageable pageable);
 
     Page<Guest> findByIdInAndNameLike(List<String> ids, String name, Pageable pageable);
+
+    Guest findByPhone(String phone);
 }

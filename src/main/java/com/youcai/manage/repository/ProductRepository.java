@@ -16,4 +16,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     Page<Product> findByNameLikeAndPCodeIn(String name, List<String> pCodes, Pageable pageable);
 
     Long countBy();
+
+    Product findByName(String name);
 }
