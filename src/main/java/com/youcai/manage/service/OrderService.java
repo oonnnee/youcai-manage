@@ -4,6 +4,7 @@ import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dto.excel.order.Export;
 import com.youcai.manage.vo.order.PendingVO;
+import com.youcai.manage.vo.stat.RangeVO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -26,4 +27,6 @@ public interface OrderService {
 
     boolean isGuestExist(String guestId);
     boolean isProductExist(String productId);
+
+    List<Object[]> sumByStateAndDate(String state, Date startDate, Date endDate);
 }

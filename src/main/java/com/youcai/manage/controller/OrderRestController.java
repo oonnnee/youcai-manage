@@ -8,6 +8,7 @@ import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.utils.OrderUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.utils.comparator.DateComparator;
@@ -44,13 +45,10 @@ public class OrderRestController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
+        Pageable pageable = ManageUtils.getPageable(page, size);
+
         Page<Guest> guestPage = orderService.findGuestPage(pageable);
+
         return ResultVOUtils.success(this.getListVOPage(guestPage, pageable));
     }
 
@@ -60,13 +58,10 @@ public class OrderRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestId
     ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
+        Pageable pageable = ManageUtils.getPageable(page, size);
+
         Page<Guest> guestIdPage = orderService.findGuestPageByGuestIdLike(pageable, guestId);
+
         return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
     }
 
@@ -76,13 +71,10 @@ public class OrderRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestName
     ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
+        Pageable pageable = ManageUtils.getPageable(page, size);
+
         Page<Guest> guestIdPage = orderService.findGuestPageByGuestNameLike(pageable, guestName);
+
         return ResultVOUtils.success(this.getListVOPage(guestIdPage, pageable));
     }
 
@@ -106,7 +98,8 @@ public class OrderRestController {
             @RequestParam String guestId
     ){
         List<Date> dates = orderService.findDatesByGuestId(guestId);
-        return ResultVOUtils.success(dates);
+
+        return ResultVOUtils.success(dates, "此客户暂无采购");
     }
 
     // TODO 更新api
@@ -116,49 +109,8 @@ public class OrderRestController {
             @RequestParam  @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         List<String> states = orderService.findStatesByGuestIdAndDate(guestId, date);
-        return ResultVOUtils.success(states);
-    }
 
-    // TODO 更新api
-    @GetMapping("/findOneWithCategories")
-    public ResultVO<List<CategoryVO>> findCategories(
-            @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-            @RequestParam String state
-    ){
-        /*------------ 1.查询数据 -------------*/
-        /*--- 产品大类数据 ---*/
-        List<Category> categories = categoryService.findAll();
-        /*--- 采购数据 ---*/
-        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
-        /*--- 产品数据 ---*/
-        Map<String, Product> productMap = productService.findMap();
-        /*------------ 2.数据拼装 -------------*/
-        List<CategoryVO> categoryVOS = new ArrayList<>();
-        for (Category category : categories){
-            CategoryVO categoryVO = new CategoryVO();
-            categoryVO.setCode(category.getCode());
-            categoryVO.setName(category.getName());
-            List<ProductVO> productVOS = new ArrayList<>();
-            for (Order order : orders){
-                Product product = productMap.get(order.getId().getProductId());
-                if (product.getPCode().equals(category.getCode())){
-                    ProductVO productVO = new ProductVO();
-                    productVO.setId(order.getId().getProductId());
-                    productVO.setName(product.getName());
-                    productVO.setUnit(product.getUnit());
-                    productVO.setPrice(order.getPrice());
-                    productVO.setNum(order.getNum());
-                    productVO.setAmount(order.getAmount());
-                    productVO.setNote(order.getNote());
-                    productVOS.add(productVO);
-                }
-            }
-            categoryVO.setProducts(productVOS);
-            categoryVOS.add(categoryVO);
-        }
-        /*------------ 3.返回 -------------*/
-        return ResultVOUtils.success(categoryVOS);
+        return ResultVOUtils.success(states, "此客户暂无采购");
     }
 
     //  TODO 更新api
@@ -169,13 +121,11 @@ public class OrderRestController {
             @RequestParam String state
     ){
         Guest guest = guestService.findOne(guestId);
-        if (guest == null){
-            return ResultVOUtils.error("未查询到此客户");
-        }
+        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取采购单失败", "此客户不存在"));
+
         List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
-        if (CollectionUtils.isEmpty(orders)){
-            return ResultVOUtils.error("未查询到此采购单");
-        }
+        ManageUtils.ManageException(orders, ManageUtils.toErrorString("获取采购单失败", "未能查询到此采购单"));
+
         Map<String, Product> productMap = productService.findMap();
 
         OrdersVO ordersVO = new OrdersVO();
@@ -225,6 +175,49 @@ public class OrderRestController {
             @RequestParam String state
     ){
         orderService.updateState(guestId, date, state, OrderUtils.getStateBacked());
-        return ResultVOUtils.success();
+        return ResultVOUtils.success("退回采购单成功");
     }
+
+    //    @GetMapping("/findOneWithCategories")
+//    public ResultVO<List<CategoryVO>> findCategories(
+//            @RequestParam String guestId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+//            @RequestParam String state
+//    ){
+//        /*------------ 1.查询数据 -------------*/
+//        /*--- 产品大类数据 ---*/
+//        List<Category> categories = categoryService.findAll();
+//        /*--- 采购数据 ---*/
+//        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
+//        /*--- 产品数据 ---*/
+//        Map<String, Product> productMap = productService.findMap();
+//        /*------------ 2.数据拼装 -------------*/
+//        List<CategoryVO> categoryVOS = new ArrayList<>();
+//        for (Category category : categories){
+//            CategoryVO categoryVO = new CategoryVO();
+//            categoryVO.setCode(category.getCode());
+//            categoryVO.setName(category.getName());
+//            List<ProductVO> productVOS = new ArrayList<>();
+//            for (Order order : orders){
+//                Product product = productMap.get(order.getId().getProductId());
+//                if (product.getPCode().equals(category.getCode())){
+//                    ProductVO productVO = new ProductVO();
+//                    productVO.setId(order.getId().getProductId());
+//                    productVO.setName(product.getName());
+//                    productVO.setUnit(product.getUnit());
+//                    productVO.setPrice(order.getPrice());
+//                    productVO.setNum(order.getNum());
+//                    productVO.setAmount(order.getAmount());
+//                    productVO.setNote(order.getNote());
+//                    productVOS.add(productVO);
+//                }
+//            }
+//            categoryVO.setProducts(productVOS);
+//            categoryVOS.add(categoryVO);
+//        }
+//        /*------------ 3.返回 -------------*/
+//        return ResultVOUtils.success(categoryVOS);
+//    }
 }
+
+

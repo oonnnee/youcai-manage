@@ -89,9 +89,7 @@ public class ProductRestController {
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "10") Integer size
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Product> productPage = productService.findAll(pageable);
         Map<String, String> categoryMap = categoryService.findAllInMap();
@@ -115,9 +113,7 @@ public class ProductRestController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false, name = "codes") String codeStr
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         List<String> codes = null;
         if (StringUtils.isEmpty(codeStr) == false){

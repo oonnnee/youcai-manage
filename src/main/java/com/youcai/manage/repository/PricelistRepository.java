@@ -28,5 +28,7 @@ public interface PricelistRepository extends JpaRepository<Pricelist, PricelistK
     String find(String guestId);
     @Query(value = "select 1 from pricelist where product_id = ?1 limit 1", nativeQuery = true)
     String findWithProductId(String productId);
+    @Query(value = "select 1 from pricelist where guest_id = ?1 and pdate = ?2 limit 1", nativeQuery = true)
+    String findWithGuestIdAndDate(String guestId, Date date);
 }
 

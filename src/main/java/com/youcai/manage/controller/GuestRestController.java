@@ -83,9 +83,7 @@ public class GuestRestController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findAll(pageable);
 
@@ -98,9 +96,7 @@ public class GuestRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String name
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findByNameLike(name, pageable);
 
@@ -113,9 +109,7 @@ public class GuestRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String id
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findByIdLike(id, pageable);
 

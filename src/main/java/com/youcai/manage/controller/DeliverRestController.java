@@ -10,6 +10,7 @@ import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.*;
 import com.youcai.manage.utils.DeliverUtils;
+import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.utils.comparator.DateComparator;
 import com.youcai.manage.utils.excel.deliver.ExportUtil;
@@ -64,12 +65,8 @@ public class DeliverRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestName
     ){
-        /*------------ 1.准备 -------------*/
-        // 分页
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
-        /*------------ 2.查询 -------------*/
+        Pageable pageable = ManageUtils.getPageable(page, size);
+
         Page<Guest> guestPage = deliverService.findGuestPage(pageable, guestName);
         List<ListVO> listVOS = new ArrayList<>();
         for (Guest guest : guestPage.getContent()){
@@ -85,56 +82,6 @@ public class DeliverRestController {
         return ResultVOUtils.success(listVOPage);
     }
 
-    @GetMapping("/findOneWithCategories")
-    public ResultVO<List<CategoryVO>> findCategories(
-            @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
-        /*------------ 1.查询数据 -------------*/
-        /*--- 产品大类数据 ---*/
-        List<Category> categories = categoryService.findAll();
-        /*--- 送货数据 ---*/
-        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
-        /*--- 产品数据 ---*/
-        Map<String, Product> productMap = productService.findMap();
-        /*------------ 2.数据拼装 -------------*/
-        List<CategoryVO> categoryVOS = new ArrayList<>();
-        for (Category category : categories){
-            CategoryVO categoryVO = new CategoryVO();
-            categoryVO.setCode(category.getCode());
-            categoryVO.setName(category.getName());
-            List<ProductVO> productVOS = new ArrayList<>();
-            for (Deliver deliver : delivers){
-                Product product = productMap.get(deliver.getId().getProductId());
-                if (product.getPCode().equals(category.getCode())){
-                    ProductVO productVO = new ProductVO();
-                    productVO.setId(deliver.getId().getProductId());
-                    productVO.setName(product.getName());
-                    productVO.setUnit(product.getUnit());
-                    productVO.setPrice(deliver.getPrice());
-                    productVO.setNum(deliver.getNum());
-                    productVO.setAmount(deliver.getAmount());
-                    productVO.setNote(deliver.getNote());
-                    productVOS.add(productVO);
-                }
-            }
-            categoryVO.setProducts(productVOS);
-            categoryVOS.add(categoryVO);
-        }
-        /*------------ 3.返回 -------------*/
-        return ResultVOUtils.success(categoryVOS);
-    }
-
-//    @PostMapping("/delete")
-//    public ResultVO delete(
-//            @RequestParam String guestId,
-//            @RequestParam Integer driverId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-//    ){
-//        deliverService.delete(guestId, driverId, date);
-//        return ResultVOUtils.success();
-//    }
-
     @PostMapping("/save")
     public ResultVO save(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date orderDate,
@@ -142,20 +89,23 @@ public class DeliverRestController {
             @RequestParam Integer driverId,
             @RequestParam String products
     ){
-        List<ProductDTO> productDTOS = new ArrayList<>();
+        List<ProductDTO> productDTOS;
         try {
             productDTOS = new Gson().fromJson(products,
                     new TypeToken<List<ProductDTO>>() {
                     }.getType());
         } catch (Exception e) {
-            throw new ManageException("新增送货单失败，产品json解析错误");
+            throw new ManageException(ManageUtils.toErrorString("新增送货单失败", "产品参数错误"));
         }
+
         List<Deliver> delivers = productDTOS.stream().map(e ->
                 new Deliver(new DeliverKey(driverId, guestId, new Date(), e.getId(), DeliverUtils.getStateDelivering()),
                         e.getPrice(), e.getNum(), e.getPrice().multiply(e.getNum()), e.getNote())
         ).collect(Collectors.toList());
+
         deliverService.save(delivers, guestId, orderDate);
-        return ResultVOUtils.success();
+
+        return ResultVOUtils.success("新增送货单成功");
     }
 
     //  TODO 更新api
@@ -165,18 +115,14 @@ public class DeliverRestController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
     ){
         Guest guest = guestService.findOne(guestId);
-        if (guest == null){
-            return ResultVOUtils.error("未查询到此客户");
-        }
-        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
+        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "此客户不存在"));
 
-        if (CollectionUtils.isEmpty(delivers)){
-            return ResultVOUtils.error("未查询到此送货单");
-        }
+        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
+        ManageUtils.ManageException(delivers, ManageUtils.toErrorString("获取采购单失败", "未能查询到此送货单"));
+
         Driver driver = driverService.findOne(delivers.get(0).getId().getDriverId());
-        if (driver == null){
-            return ResultVOUtils.error("未查询到此司机");
-        }
+        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "送货司机不存在"));
+
         Map<String, Product> productMap = productService.findMap();
 
         DeliversVO deliversVO = new DeliversVO();
@@ -208,6 +154,54 @@ public class DeliverRestController {
             @RequestParam String guestId
     ){
         List<Date> dates = deliverService.findDatesByGuestId(guestId);
-        return ResultVOUtils.success(dates);
+
+        return ResultVOUtils.success(dates, "此客户暂无送货单");
     }
+
+//    @GetMapping("/findOneWithCategories")
+//    public ResultVO<List<CategoryVO>> findCategories(
+//            @RequestParam String guestId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+//    ){
+//        List<Category> categories = categoryService.findAll();
+//        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
+//        /*--- 产品数据 ---*/
+//        Map<String, Product> productMap = productService.findMap();
+//        /*------------ 2.数据拼装 -------------*/
+//        List<CategoryVO> categoryVOS = new ArrayList<>();
+//        for (Category category : categories){
+//            CategoryVO categoryVO = new CategoryVO();
+//            categoryVO.setCode(category.getCode());
+//            categoryVO.setName(category.getName());
+//            List<ProductVO> productVOS = new ArrayList<>();
+//            for (Deliver deliver : delivers){
+//                Product product = productMap.get(deliver.getId().getProductId());
+//                if (product.getPCode().equals(category.getCode())){
+//                    ProductVO productVO = new ProductVO();
+//                    productVO.setId(deliver.getId().getProductId());
+//                    productVO.setName(product.getName());
+//                    productVO.setUnit(product.getUnit());
+//                    productVO.setPrice(deliver.getPrice());
+//                    productVO.setNum(deliver.getNum());
+//                    productVO.setAmount(deliver.getAmount());
+//                    productVO.setNote(deliver.getNote());
+//                    productVOS.add(productVO);
+//                }
+//            }
+//            categoryVO.setProducts(productVOS);
+//            categoryVOS.add(categoryVO);
+//        }
+//        /*------------ 3.返回 -------------*/
+//        return ResultVOUtils.success(categoryVOS);
+//    }
+
+//    @PostMapping("/delete")
+//    public ResultVO delete(
+//            @RequestParam String guestId,
+//            @RequestParam Integer driverId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+//    ){
+//        deliverService.delete(guestId, driverId, date);
+//        return ResultVOUtils.success();
+//    }
 }

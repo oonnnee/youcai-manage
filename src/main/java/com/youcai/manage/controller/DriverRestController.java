@@ -73,9 +73,7 @@ public class DriverRestController {
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String name
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Driver> driverPage = driverService.findByNameLike(name, pageable);
 
@@ -87,9 +85,7 @@ public class DriverRestController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
     ){
-        page = page<0 ? 0:page;
-        size = size<=0 ? 10:size;
-        Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Driver> driverPage = driverService.list(pageable);
 

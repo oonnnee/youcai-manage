@@ -2,6 +2,7 @@ package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Category;
 import com.youcai.manage.dataobject.Pricelist;
+import com.youcai.manage.dataobject.PricelistKey;
 import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.excel.pricelist.CategoryExport;
 import com.youcai.manage.dto.excel.pricelist.Export;
@@ -10,14 +11,24 @@ import com.youcai.manage.repository.PricelistRepository;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
 public class PricelistServiceImpl implements PricelistService {
+
+    private void checkRepeat(String guestId, Date date){
+        ManageUtils.ManageException(
+                this.isRepeat(guestId, date),
+                ManageUtils.toErrorString("新增报价失败", "该客户当天已经存在报价了")
+        );
+    }
+
 
     @Autowired
     private PricelistRepository pricelistRepository;
@@ -29,15 +40,37 @@ public class PricelistServiceImpl implements PricelistService {
     private CategoryService categoryService;
 
     @Override
-    public List<Pricelist> findById_GuestId(String guestId) {
-        List<Pricelist> pricelists = pricelistRepository.findById_GuestId(guestId);
-        return pricelists;
+    @Transactional
+    public void save(List<Pricelist> pricelists) {
+        ManageUtils.ManageException(
+                CollectionUtils.isEmpty(pricelists),
+                ManageUtils.toErrorString("新增报价失败", "报价产品为空")
+        );
+
+        PricelistKey pricelistKey = pricelists.get(0).getId();
+        this.checkRepeat(pricelistKey.getGuestId(), pricelistKey.getPdate());
+
+        List<Pricelist> saveResult = pricelistRepository.save(pricelists);
+        ManageUtils.ManageException(saveResult, ManageUtils.toErrorString("新增报价失败", "服务器繁忙，请稍后再试"));
     }
 
     @Override
     @Transactional
-    public void save(List<Pricelist> pricelists) {
-        pricelistRepository.save(pricelists);
+    public void update(List<Pricelist> pricelists) {
+        ManageUtils.ManageException(
+                CollectionUtils.isEmpty(pricelists),
+                ManageUtils.toErrorString("更新报价失败", "更新产品为空")
+        );
+
+        List<Pricelist> updateResult = pricelistRepository.save(pricelists);
+        ManageUtils.ManageException(updateResult, ManageUtils.toErrorString("更新报价失败", "服务器繁忙，请稍后再试"));
+    }
+
+    @Override
+    public List<Pricelist> findById_GuestId(String guestId) {
+        List<Pricelist> pricelists = pricelistRepository.findById_GuestId(guestId);
+
+        return pricelists;
     }
 
     @Override
@@ -54,6 +87,7 @@ public class PricelistServiceImpl implements PricelistService {
     @Override
     public List<Date> findPdatesByGuestId(String guestId) {
         List<Date> dates = pricelistRepository.findDistinctId_PdateById_GuestId(guestId);
+
         return dates;
     }
 
@@ -61,9 +95,11 @@ public class PricelistServiceImpl implements PricelistService {
     public Map<String, Pricelist> findProductIdMap(String guestId, Date pdate) {
         List<Pricelist> pricelists = this.findById_GuestIdAndId_pdate(guestId, pdate);
         Map<String, Pricelist> map = new HashMap<>();
+
         for (Pricelist pricelist : pricelists){
             map.put(pricelist.getId().getProductId(), pricelist);
         }
+
         return map;
     }
 
@@ -107,5 +143,10 @@ public class PricelistServiceImpl implements PricelistService {
     @Override
     public boolean isProductExist(String productId) {
         return pricelistRepository.findWithProductId(productId) != null;
+    }
+
+    @Override
+    public boolean isRepeat(String guestId, Date date) {
+        return pricelistRepository.findWithGuestIdAndDate(guestId, date) != null;
     }
 }

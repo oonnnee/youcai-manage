@@ -32,20 +32,4 @@ public class ManageExceptionHandler {
         return ResultVOUtils.error(e.getAllErrors().get(0).getDefaultMessage());
     }
 
-//    @ExceptionHandler(MultipartException.class)
-//    @ResponseBody
-//    public ResultVO handleMultipartException(MultipartException e){
-//        System.out.println("===============");
-//        System.out.println(e.getMessage());
-//        System.out.println("===============");
-//        return ResultVOUtils.error(e.getMessage());
-//    }
-//    @ExceptionHandler(FileUploadBase.FileSizeLimitExceededException.class)
-//    @ResponseBody
-//    public ResultVO handleFileSizeLimitExceededException(FileUploadBase.FileSizeLimitExceededException e){
-//        System.out.println("===============");
-//        System.out.println(e.getMessage());
-//        System.out.println("===============");
-//        return ResultVOUtils.error(e.getMessage());
-//    }
 }

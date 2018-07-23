@@ -8,6 +8,7 @@ import com.youcai.manage.dto.excel.deliver.ProductExport;
 import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.repository.DeliverRepository;
 import com.youcai.manage.service.*;
+import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -42,17 +43,19 @@ public class DeliverServiceImpl implements DeliverService {
         return deliverRepository.findByIdGuestIdAndIdDdate(guestId, date);
     }
 
-//    @Override
-//    @Transactional
-//    public void delete(String guestId, Integer driverId, Date date) {
-//        deliverRepository.delete(guestId, driverId, date);
-//    }
-
     @Override
     @Transactional
     public void save(List<Deliver> delivers, String orderGuestId, Date orderDate) {
+        List<String> states = orderService.findStatesByGuestIdAndDate(orderGuestId, orderDate);
+        ManageUtils.ManageException(
+                !states.contains(OrderEnum.NEW.getState()),
+                ManageUtils.toErrorString("创建送货单失败", "采购单状态异常")
+        );
+
         orderService.updateState(orderGuestId, orderDate, OrderEnum.NEW.getState(), OrderEnum.DELIVERED.getState());
-        deliverRepository.save(delivers);
+
+        List<Deliver> saveResult = deliverRepository.save(delivers);
+        ManageUtils.ManageException(saveResult, ManageUtils.toErrorString("创建送货单失败", "服务器繁忙，请稍后再试"));
     }
 
     @Override
@@ -116,4 +119,11 @@ public class DeliverServiceImpl implements DeliverService {
     public boolean isDriverExist(Integer driverId) {
         return deliverRepository.findWithDriverId(driverId) != null;
     }
+
+
+    //    @Override
+//    @Transactional
+//    public void delete(String guestId, Integer driverId, Date date) {
+//        deliverRepository.delete(guestId, driverId, date);
+//    }
 }

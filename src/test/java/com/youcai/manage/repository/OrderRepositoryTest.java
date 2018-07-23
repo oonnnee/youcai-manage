@@ -2,6 +2,7 @@ package com.youcai.manage.repository;
 
 import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dataobject.OrderKey;
+import com.youcai.manage.enums.OrderEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -75,5 +77,13 @@ public class OrderRepositoryTest {
     @Test
     public void findByIdStateStartsWith(){
         List orders = orderRepository.findDistinctOdateAndGuestIdAndStateByStateLike("1%");
+    }
+
+    @Test
+    public void sumByStateAndDate() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date1 = dateFormat.parse("2017-01-01");
+        Date date2 = dateFormat.parse("2018-07-21");
+        List<Object[]> objects = orderRepository.sumByStateAndDate(OrderEnum.DELIVERED.getState(), date1, date2);
     }
 }

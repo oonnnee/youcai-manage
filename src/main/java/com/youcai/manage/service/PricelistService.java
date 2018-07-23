@@ -17,6 +17,7 @@ public interface PricelistService {
     Map<String, Pricelist> findProductIdMap(String guestId, Date pdate);
 
     void save(List<Pricelist> pricelists);
+    void update(List<Pricelist> pricelists);
 
     void delete(String guestId, Date pdate);
 
@@ -26,4 +27,6 @@ public interface PricelistService {
 
     boolean isGuestExist(String guestId);
     boolean isProductExist(String productId);
+
+    boolean isRepeat(String guestId, Date date);
 }

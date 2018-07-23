@@ -40,4 +40,7 @@ public interface OrderRepository extends JpaRepository<Order, OrderKey> {
     String find(String guestId);
     @Query(value = "select 1 from orders where product_id = ?1 limit 1", nativeQuery = true)
     String findWithProductId(String productId);
+
+    @Query(value = "select guest_id, SUM(amount) from orders where state = ?1 and odate BETWEEN ?2 and ?3 GROUP BY guest_id ORDER BY SUM(amount) desc", nativeQuery = true)
+    List<Object[]> sumByStateAndDate(String state, Date startDate, Date endDate);
 }

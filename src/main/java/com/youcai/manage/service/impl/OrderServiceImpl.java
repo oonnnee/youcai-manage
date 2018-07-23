@@ -10,6 +10,7 @@ import com.youcai.manage.repository.OrderRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.vo.order.PendingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -174,5 +175,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public boolean isProductExist(String productId) {
         return orderRepository.findWithProductId(productId) != null;
+    }
+
+    @Override
+    public List<Object[]> sumByStateAndDate(String state, Date startDate, Date endDate) {
+        ManageUtils.ManageException(endDate.getTime() < startDate.getTime(), "结束日期不能小于起始日期");
+
+        List<Object[]> objects = orderRepository.sumByStateAndDate(state, startDate, endDate);
+
+        return objects;
     }
 }
