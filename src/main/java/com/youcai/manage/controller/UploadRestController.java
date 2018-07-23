@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.UUID;
 
 @RestController
@@ -41,7 +42,7 @@ public class UploadRestController {
         }
         bos.flush();
         bos.close();
-        return ResultVOUtils.success(fileName);
+        return ResultVOUtils.successString(fileName);
     }
 
 }

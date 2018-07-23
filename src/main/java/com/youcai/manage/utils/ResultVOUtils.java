@@ -12,6 +12,10 @@ public class ResultVOUtils {
         return new ResultVO(0,"成功", data);
     }
 
+    public static ResultVO successString(String data){
+        return new ResultVO(0,"成功", data);
+    }
+
     public static ResultVO success(String msg){
         return new ResultVO(0, msg, null);
     }
