@@ -7,10 +7,12 @@ import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.excel.pricelist.CategoryExport;
 import com.youcai.manage.dto.excel.pricelist.Export;
 import com.youcai.manage.dto.excel.pricelist.ProductExport;
+import com.youcai.manage.dto.pricelist.AllDTO;
 import com.youcai.manage.repository.PricelistRepository;
 import com.youcai.manage.service.CategoryService;
 import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.transform.PricelistTransform;
 import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,5 +150,14 @@ public class PricelistServiceImpl implements PricelistService {
     @Override
     public boolean isRepeat(String guestId, Date date) {
         return pricelistRepository.findWithGuestIdAndDate(guestId, date) != null;
+    }
+
+    @Override
+    public List<AllDTO> findAllWith(String guestId, Date date) {
+        List<Object[]> objectss = pricelistRepository.findAllWith(guestId, date);
+
+        List<AllDTO> allDTOS = PricelistTransform.objectssToAllDTOS(objectss);
+
+        return allDTOS;
     }
 }

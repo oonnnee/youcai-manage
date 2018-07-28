@@ -2,6 +2,7 @@ package com.youcai.manage.service;
 
 import com.youcai.manage.dataobject.Pricelist;
 import com.youcai.manage.dto.excel.pricelist.Export;
+import com.youcai.manage.dto.pricelist.AllDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,8 @@ public interface PricelistService {
     List<Pricelist> findById_GuestId(String guestId);
 
     List<Pricelist> findById_GuestIdAndId_pdate(String guestId, Date pdate);
+
+    List<AllDTO> findAllWith(String guestId, Date date);
 
     // productId: pricelist
     Map<String, Pricelist> findProductIdMap(String guestId, Date pdate);

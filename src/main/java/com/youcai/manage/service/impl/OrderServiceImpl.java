@@ -5,11 +5,13 @@ import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.excel.order.Export;
 import com.youcai.manage.dto.excel.order.ProductExport;
+import com.youcai.manage.dto.order.AllDTO;
 import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.repository.OrderRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.transform.OrderTransform;
 import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.vo.order.PendingVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -180,9 +185,75 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Object[]> sumByStateAndDate(String state, Date startDate, Date endDate) {
         ManageUtils.ManageException(endDate.getTime() < startDate.getTime(), "结束日期不能小于起始日期");
+        ManageUtils.ManageException(startDate == null, "起始日期不能为空");
+        ManageUtils.ManageException(endDate == null, "结束日期不能为空");
 
         List<Object[]> objects = orderRepository.sumByStateAndDate(state, startDate, endDate);
 
         return objects;
+    }
+    @Override
+    public List<Object[]> sumByStateAndDateNoOrder(String state, Date startDate, Date endDate) {
+        ManageUtils.ManageException(endDate.getTime() < startDate.getTime(), "结束日期不能小于起始日期");
+        ManageUtils.ManageException(startDate == null, "起始日期不能为空");
+        ManageUtils.ManageException(endDate == null, "结束日期不能为空");
+
+        List<Object[]> objects = orderRepository.sumByStateAndDateNoOrder(state, startDate, endDate);
+
+        return objects;
+    }
+    @Override
+    public List<Object[]> sumByStateAndMonth(String state, Integer month) {
+        String months = month < 10 ? "0"+month : ""+month;
+        String date = LocalDate.now().getYear() + "-" +months+ "-%";
+
+        List<Object[]> objects = orderRepository.sumByStateAndMonth(state, date);
+
+        return objects;
+    }
+    @Override
+    public List<Object[]> sumByStateAndDay(String state, int startDay, int endDay) {
+        ManageUtils.ManageException(endDay < startDay, "结束日期不能小于起始日期");
+
+        Date startDate = null;
+        Date endDate = null;
+
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        try {
+            startDate = dateFormat.parse(year+"-"+month+"-"+startDay);
+            endDate = dateFormat.parse(year+"-"+month+"-"+endDay);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        List<Object[]> objects = orderRepository.sumByStateAndDateNoOrder(state, startDate, endDate);
+
+        return objects;
+    }
+    @Override
+    public List<Object[]> sumByStateAndDateEqual(String state, Date date) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            date = dateFormat.parse(dateFormat.format(date));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        List<Object[]> objects = orderRepository.sumByStateAndDateEqual(state, date);
+
+        return objects;
+    }
+
+    @Override
+    public List<AllDTO> findAllWith(String guestId, Date date, String state) {
+        List<Object[]> objectss = orderRepository.findAllWith(guestId, date, state);
+
+        List<AllDTO> allDTOS = OrderTransform.objectssToAllDTOS(objectss);
+
+        return allDTOS;
     }
 }

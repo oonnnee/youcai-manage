@@ -102,7 +102,6 @@ public class GuestRestController {
 
         return ResultVOUtils.success(guestPage);
     }
-
     @GetMapping("/findPageByIdLike")
     public ResultVO<Page<Guest>> findByIdLike(
             @RequestParam(defaultValue = "0") Integer page,
@@ -112,6 +111,18 @@ public class GuestRestController {
         Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findByIdLike(id, pageable);
+
+        return ResultVOUtils.success(guestPage);
+    }
+    @GetMapping("/findPageByPhoneLike")
+    public ResultVO<Page<Guest>> findByPhoneLike(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String phone
+    ){
+        Pageable pageable = ManageUtils.getPageable(page, size);
+
+        Page<Guest> guestPage = guestService.findByPhoneLike(phone, pageable);
 
         return ResultVOUtils.success(guestPage);
     }

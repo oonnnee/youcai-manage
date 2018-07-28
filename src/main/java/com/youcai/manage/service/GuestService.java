@@ -25,8 +25,8 @@ public interface GuestService {
     void updatePwd(String id, String pwd);
 
     Page<Guest> findByNameLike(String name, Pageable pageable);
-
     Page<Guest> findByIdLike(String id, Pageable pageable);
+    Page<Guest> findByPhoneLike(String phone, Pageable pageable);
 
     Long countAll();
 

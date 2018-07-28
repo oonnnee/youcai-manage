@@ -10,6 +10,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -68,4 +70,8 @@ public class PricelistRepositoryTest {
         System.out.println(dates);
     }
 
+    @Test
+    public void findAllWith() throws ParseException {
+        List<Object[]> allDTOS = pricelistRepository.findAllWith("2133148826", new SimpleDateFormat("yyyy-MM-dd").parse("2018-07-21"));
+    }
 }

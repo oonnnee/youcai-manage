@@ -86,4 +86,10 @@ public class OrderRepositoryTest {
         Date date2 = dateFormat.parse("2018-07-21");
         List<Object[]> objects = orderRepository.sumByStateAndDate(OrderEnum.DELIVERED.getState(), date1, date2);
     }
+
+    @Test
+    public void sumByStateAndDateEqual() throws ParseException {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<Object[]> objects = orderRepository.sumByStateAndDateEqual("4", dateFormat.parse("2018-07-23"));
+    }
 }

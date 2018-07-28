@@ -2,6 +2,7 @@ package com.youcai.manage.service;
 
 import com.youcai.manage.dataobject.Deliver;
 import com.youcai.manage.dataobject.Guest;
+import com.youcai.manage.dto.deliver.AllDTO;
 import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.data.domain.Page;
@@ -23,4 +24,6 @@ public interface DeliverService {
     boolean isGuestExist(String guestId);
     boolean isProductExist(String productId);
     boolean isDriverExist(Integer driverId);
+
+    List<AllDTO> findAllWith(String guestId, Date date);
 }

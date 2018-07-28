@@ -3,6 +3,7 @@ package com.youcai.manage.controller;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.youcai.manage.dataobject.*;
+import com.youcai.manage.dto.deliver.AllDTO;
 import com.youcai.manage.dto.deliver.ProductDTO;
 import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.dto.excel.deliver.ProductExport;
@@ -117,31 +118,27 @@ public class DeliverRestController {
         Guest guest = guestService.findOne(guestId);
         ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "此客户不存在"));
 
-        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
-        ManageUtils.ManageException(delivers, ManageUtils.toErrorString("获取采购单失败", "未能查询到此送货单"));
+        List<AllDTO> allDTOS = deliverService.findAllWith(guestId, date);
+        ManageUtils.ManageException(allDTOS, ManageUtils.toErrorString("获取采购单失败", "未能查询到此送货单"));
 
-        Driver driver = driverService.findOne(delivers.get(0).getId().getDriverId());
-        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "送货司机不存在"));
-
-        Map<String, Product> productMap = productService.findMap();
+        ManageUtils.ManageException(allDTOS.get(0).getDriverId(), ManageUtils.toErrorString("获取送货单失败", "送货司机不存在"));
 
         DeliversVO deliversVO = new DeliversVO();
 
-        List<ProductVO> products = delivers.stream().map( e -> {
-                    Product product = productMap.get(e.getId().getProductId());
-            return new ProductVO(
-                            product.getId(), product.getName(), product.getUnit(),
-                            e.getPrice(), e.getNum(), e.getAmount(), e.getNote()
-                    );
-                }
+        List<ProductVO> products = allDTOS.stream().map( e ->
+                    new ProductVO(
+                            e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
+                            e.getProductPrice(), e.getProductNum(), e.getProductAmount(), e.getProductImgfile(),
+                            e.getNote()
+                    )
         ).collect(Collectors.toList());
 
         deliversVO.setGuestId(guestId);
         deliversVO.setGuestName(guest.getName());
-        deliversVO.setDriverId(driver.getId());
-        deliversVO.setDriverName(driver.getName());
+        deliversVO.setDriverId(allDTOS.get(0).getDriverId());
+        deliversVO.setDriverName(allDTOS.get(0).getDriverName());
         deliversVO.setDate(date);
-        deliversVO.setState(delivers.get(0).getId().getState());
+        deliversVO.setState(allDTOS.get(0).getState());
         deliversVO.setProducts(products);
 
         return ResultVOUtils.success(deliversVO);
@@ -157,6 +154,44 @@ public class DeliverRestController {
 
         return ResultVOUtils.success(dates, "此客户暂无送货单");
     }
+
+//    @GetMapping("/findOne")
+//    public ResultVO findOne(
+//            @RequestParam String guestId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+//    ){
+//        Guest guest = guestService.findOne(guestId);
+//        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "此客户不存在"));
+//
+//        List<Deliver> delivers = deliverService.findByGuestIdAndDate(guestId, date);
+//        ManageUtils.ManageException(delivers, ManageUtils.toErrorString("获取采购单失败", "未能查询到此送货单"));
+//
+//        Driver driver = driverService.findOne(delivers.get(0).getId().getDriverId());
+//        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取送货单失败", "送货司机不存在"));
+//
+//        Map<String, Product> productMap = productService.findMap();
+//
+//        DeliversVO deliversVO = new DeliversVO();
+//
+//        List<ProductVO> products = delivers.stream().map( e -> {
+//                    Product product = productMap.get(e.getId().getProductId());
+//                    return new ProductVO(
+//                            product.getId(), product.getName(), product.getUnit(),
+//                            e.getPrice(), e.getNum(), e.getAmount(), e.getNote()
+//                    );
+//                }
+//        ).collect(Collectors.toList());
+//
+//        deliversVO.setGuestId(guestId);
+//        deliversVO.setGuestName(guest.getName());
+//        deliversVO.setDriverId(driver.getId());
+//        deliversVO.setDriverName(driver.getName());
+//        deliversVO.setDate(date);
+//        deliversVO.setState(delivers.get(0).getId().getState());
+//        deliversVO.setProducts(products);
+//
+//        return ResultVOUtils.success(deliversVO);
+//    }
 
 //    @GetMapping("/findOneWithCategories")
 //    public ResultVO<List<CategoryVO>> findCategories(

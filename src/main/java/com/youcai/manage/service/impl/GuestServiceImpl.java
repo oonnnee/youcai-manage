@@ -115,13 +115,20 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         Page<Guest> guestPage = guestRepository.findByNameLike("%" + name + "%", pageable);
         return guestPage;
     }
-
     @Override
     public Page<Guest> findByIdLike(String id, Pageable pageable) {
         if (StringUtils.isEmpty(id)){
             return guestRepository.findAll(pageable);
         }
         Page<Guest> guestPage = guestRepository.findByIdLike("%" + id + "%", pageable);
+        return guestPage;
+    }
+    @Override
+    public Page<Guest> findByPhoneLike(String phone, Pageable pageable) {
+        if (StringUtils.isEmpty(phone)){
+            return guestRepository.findAll(pageable);
+        }
+        Page<Guest> guestPage = guestRepository.findByPhoneLike("%" + phone + "%", pageable);
         return guestPage;
     }
 
@@ -154,7 +161,9 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         List<Guest> guests = guestRepository.findAll();
         Map<String, String> map = new HashMap<>();
         for(Guest guest : guests){
-            map.put(guest.getId(), guest.getName());
+            if (!guest.getId().equals("admin")){
+                map.put(guest.getId(), guest.getName());
+            }
         }
         return map;
     }

@@ -12,10 +12,12 @@ import java.math.BigDecimal;
 public class ProductVO {
 
     private String id;
-
     private String name;
-
-    private BigDecimal price;
-
+    private String category;
+    private String unit;
+    private BigDecimal marketPrice;
+    private BigDecimal guestPrice;
+    private String imgfile;
     private String note;
+
 }

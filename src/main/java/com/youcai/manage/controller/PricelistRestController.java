@@ -5,6 +5,7 @@ import com.youcai.manage.dto.PricelistDTO;
 import com.youcai.manage.dto.excel.pricelist.CategoryExport;
 import com.youcai.manage.dto.excel.pricelist.Export;
 import com.youcai.manage.dto.excel.pricelist.ProductExport;
+import com.youcai.manage.dto.pricelist.AllDTO;
 import com.youcai.manage.dto.pricelist.ProductDTO;
 import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
@@ -69,7 +70,7 @@ public class PricelistRestController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestId
-    ){
+    ) {
         Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findByIdLike(guestId, pageable);
@@ -82,7 +83,7 @@ public class PricelistRestController {
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String guestName
-    ){
+    ) {
         Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findByNameLike(guestName, pageable);
@@ -95,7 +96,7 @@ public class PricelistRestController {
     public ResultVO<Page<PricelistDateVO>> list(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size
-    ){
+    ) {
         Pageable pageable = ManageUtils.getPageable(page, size);
 
         Page<Guest> guestPage = guestService.findAll(pageable);
@@ -103,15 +104,15 @@ public class PricelistRestController {
         return ResultVOUtils.success(this.getPricelistDateVO(guestPage, pageable));
     }
 
-    private Page<PricelistDateVO> getPricelistDateVO(Page<Guest> guestPage, Pageable pageable){
+    private Page<PricelistDateVO> getPricelistDateVO(Page<Guest> guestPage, Pageable pageable) {
         List<PricelistDateVO> pricelistDateVOS = new ArrayList<>();
-        for (Guest guest : guestPage.getContent()){
-            if (guest.getId().equals("admin")){
+        for (Guest guest : guestPage.getContent()) {
+            if (guest.getId().equals("admin")) {
                 continue;
             }
             List<Pricelist> pricelists = pricelistService.findById_GuestId(guest.getId());
             Set<Date> dates = new TreeSet<>(new DateComparator());
-            for (Pricelist pricelist : pricelists){
+            for (Pricelist pricelist : pricelists) {
                 dates.add(pricelist.getId().getPdate());
             }
             PricelistDateVO pricelistVO = new PricelistDateVO(guest.getId(), guest.getName(), dates);
@@ -126,7 +127,7 @@ public class PricelistRestController {
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
             @RequestParam String products
-    ){
+    ) {
         List<ProductDTO> productDTOS;
         try {
             productDTOS = new Gson().fromJson(products,
@@ -156,7 +157,7 @@ public class PricelistRestController {
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
             @RequestParam String products
-    ){
+    ) {
         List<ProductDTO> productDTOS;
         try {
             productDTOS = new Gson().fromJson(products,
@@ -185,7 +186,7 @@ public class PricelistRestController {
     public ResultVO delete(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
+    ) {
         pricelistService.delete(guestId, date);
 
         return ResultVOUtils.success("删除报价成功");
@@ -194,7 +195,7 @@ public class PricelistRestController {
     @GetMapping("/findDatesByGuestId")
     public ResultVO<List<Date>> findDatesByGuestId(
             @RequestParam String guestId
-    ){
+    ) {
         List<Date> dates = pricelistService.findPdatesByGuestId(guestId);
 
         return ResultVOUtils.success(dates, "此客户暂无报价单");
@@ -204,21 +205,19 @@ public class PricelistRestController {
     public ResultVO findOne(
             @RequestParam String guestId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
+    ) {
         Guest guest = guestService.findOne(guestId);
         ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取报价单失败", "此客户不存在"));
 
-        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
-        ManageUtils.ManageException(pricelists, ManageUtils.toErrorString("获取报价单失败", "此客户当天不存在报价"));
-
-        Map<String, Product> productMap = productService.findMap();
+        List<AllDTO> allDTOS = pricelistService.findAllWith(guestId, date);
+        ManageUtils.ManageException(allDTOS, ManageUtils.toErrorString("获取报价单失败", "此客户当天不存在报价"));
 
         PricelistsVO pricelistsVO = new PricelistsVO();
 
-        List<ProductVO> products = pricelists.stream().map( e ->
+        List<ProductVO> products = allDTOS.stream().map(e ->
                 new ProductVO(
-                        e.getId().getProductId(), productMap.get(e.getId().getProductId()).getName(),
-                        e.getPrice(), e.getNote()
+                        e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
+                        e.getProductMarketPrice(), e.getProductGuestPrice(), e.getProductImgfile(), e.getNote()
                 )
         ).collect(Collectors.toList());
 
@@ -229,39 +228,37 @@ public class PricelistRestController {
 
         return ResultVOUtils.success(pricelistsVO);
     }
+}
 
-    /*
-    @GetMapping("/findOne")
-    public ResultVO find(
-            @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-    ){
-        List<PricelistDTO> pricelistDTOS = new ArrayList<>();
-
-        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
-        for (Pricelist pricelist : pricelists){
-            String productId = pricelist.getId().getProductId();
-            Product product = productService.findOne(productId);
-            PricelistDTO pricelistDTO = new PricelistDTO();
-            pricelistDTO.setProductId(productId);
-            pricelistDTO.setProductCode(product.getPCode());
-            pricelistDTO.setProductName(product.getName());
-            pricelistDTO.setProductImg(product.getImgfile());
-            pricelistDTO.setProductUnit(product.getUnit());
-            pricelistDTO.setPrice(pricelist.getPrice());
-            pricelistDTO.setNote(pricelist.getNote());
-            pricelistDTOS.add(pricelistDTO);
-        }
-
-        PricelistVO pricelistVO = new PricelistVO();
-
-        pricelistVO.setGuestId(guestId);
-        pricelistVO.setPdate(date);
-        pricelistVO.setPricelistDTOS(pricelistDTOS);
-
-        return ResultVOUtils.success(pricelistVO);
-    }
-    */
+//    @GetMapping("/findOne")
+//    public ResultVO findOne(
+//            @RequestParam String guestId,
+//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+//    ) {
+//        Guest guest = guestService.findOne(guestId);
+//        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取报价单失败", "此客户不存在"));
+//
+//        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
+//        ManageUtils.ManageException(pricelists, ManageUtils.toErrorString("获取报价单失败", "此客户当天不存在报价"));
+//
+//        Map<String, Product> productMap = productService.findMap();
+//
+//        PricelistsVO pricelistsVO = new PricelistsVO();
+//
+//        List<ProductVO> products = pricelists.stream().map(e ->
+//                new ProductVO(
+//                        e.getId().getProductId(), productMap.get(e.getId().getProductId()).getName(),
+//                        e.getPrice(), e.getNote()
+//                )
+//        ).collect(Collectors.toList());
+//
+//        pricelistsVO.setGuestId(guestId);
+//        pricelistsVO.setDate(date);
+//        pricelistsVO.setGuestName(guest.getName());
+//        pricelistsVO.setProducts(products);
+//
+//        return ResultVOUtils.success(pricelistsVO);
+//    }
 
 //    @GetMapping("/findOneWithCategories")
 //    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategories(
@@ -295,4 +292,3 @@ public class PricelistRestController {
 //
 //        return ResultVOUtils.success(findByGuestIdAndPdateWithCategoryVOS);
 //    }
-}

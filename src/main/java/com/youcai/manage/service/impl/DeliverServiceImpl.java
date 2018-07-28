@@ -3,11 +3,13 @@ package com.youcai.manage.service.impl;
 import com.youcai.manage.dataobject.Deliver;
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dataobject.Product;
+import com.youcai.manage.dto.deliver.AllDTO;
 import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.dto.excel.deliver.ProductExport;
 import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.repository.DeliverRepository;
 import com.youcai.manage.service.*;
+import com.youcai.manage.transform.DeliverTransform;
 import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,6 +122,14 @@ public class DeliverServiceImpl implements DeliverService {
         return deliverRepository.findWithDriverId(driverId) != null;
     }
 
+    @Override
+    public List<AllDTO> findAllWith(String guestId, Date date) {
+        List<Object[]> objectss = deliverRepository.findAllWith(guestId, date);
+
+        List<AllDTO> allDTOS = DeliverTransform.objectssToAllDTOS(objectss);
+
+        return allDTOS;
+    }
 
     //    @Override
 //    @Transactional

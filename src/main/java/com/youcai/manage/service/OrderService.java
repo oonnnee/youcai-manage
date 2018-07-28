@@ -3,6 +3,7 @@ package com.youcai.manage.service;
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dataobject.Order;
 import com.youcai.manage.dto.excel.order.Export;
+import com.youcai.manage.dto.order.AllDTO;
 import com.youcai.manage.vo.order.PendingVO;
 import com.youcai.manage.vo.stat.RangeVO;
 import org.springframework.data.domain.Page;
@@ -29,4 +30,10 @@ public interface OrderService {
     boolean isProductExist(String productId);
 
     List<Object[]> sumByStateAndDate(String state, Date startDate, Date endDate);
+    List<Object[]> sumByStateAndDateNoOrder(String state, Date startDate, Date endDate);
+    List<Object[]> sumByStateAndDay(String state, int startDay, int endDay);
+    List<Object[]> sumByStateAndDateEqual(String state, Date date);
+    List<Object[]> sumByStateAndMonth(String state, Integer month);
+
+    List<AllDTO> findAllWith(String guestId, Date date, String state);
 }
