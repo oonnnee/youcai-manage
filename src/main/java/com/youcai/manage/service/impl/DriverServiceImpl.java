@@ -115,6 +115,20 @@ public class DriverServiceImpl implements DriverService {
     public List<Driver> findAll() {
         return driverRepository.findAll();
     }
+    @Override
+    public List<Driver> findAllWithState() {
+        List<Driver> drivers = driverRepository.findAll();
+        for (Driver driver : drivers){
+            String note;
+            if (deliverService.isDriverIdle(driver.getId())){
+                note = "（空闲）";
+            }else{
+                note = "（送货中）";
+            }
+            driver.setName(driver.getName()+note);
+        }
+        return drivers;
+    }
 
     @Override
     public Long countAll() {

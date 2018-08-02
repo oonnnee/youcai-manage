@@ -6,6 +6,7 @@ import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.deliver.AllDTO;
 import com.youcai.manage.dto.excel.deliver.Export;
 import com.youcai.manage.dto.excel.deliver.ProductExport;
+import com.youcai.manage.enums.DeliverEnum;
 import com.youcai.manage.enums.OrderEnum;
 import com.youcai.manage.repository.DeliverRepository;
 import com.youcai.manage.service.*;
@@ -129,6 +130,11 @@ public class DeliverServiceImpl implements DeliverService {
         List<AllDTO> allDTOS = DeliverTransform.objectssToAllDTOS(objectss);
 
         return allDTOS;
+    }
+
+    @Override
+    public boolean isDriverIdle(Integer driverId) {
+        return deliverRepository.findWithDriverIdAndState(driverId, DeliverEnum.DELIVERING.getState()) == null;
     }
 
     //    @Override

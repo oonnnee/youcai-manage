@@ -188,4 +188,10 @@ public class GuestServiceImpl implements GuestService, UserDetailsService {
         return guest == null ?
                 false : !guest.getId().equals(id);
     }
+
+    @Override
+    public Guest findCurrent() {
+        Guest guest = ManageUtils.getCurrentUser();
+        return this.findOne(guest.getId());
+    }
 }

@@ -40,4 +40,6 @@ public interface GuestService {
 
     boolean isPhoneRepeat(String phone);
     boolean isPhoneRepeat(String phone, String id);
+
+    Guest findCurrent();
 }

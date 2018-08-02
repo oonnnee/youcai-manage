@@ -27,6 +27,9 @@ public interface DeliverRepository extends JpaRepository<Deliver, DeliverKey> {
     @Query(value = "select 1 from d_list where d_id = ?1 limit 1", nativeQuery = true)
     String findWithDriverId(Integer driverId);
 
+    @Query(value = "select 1 from d_list where d_id = ?1 and state = ?2 limit 1", nativeQuery = true)
+    String findWithDriverIdAndState(Integer driverId, String state);
+
     @Query(value = "SELECT\n" +
             "\td.ddate AS date,\n" +
             "\td.state,\n" +

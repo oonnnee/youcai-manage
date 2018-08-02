@@ -26,4 +26,6 @@ public interface DeliverService {
     boolean isDriverExist(Integer driverId);
 
     List<AllDTO> findAllWith(String guestId, Date date);
+
+    boolean isDriverIdle(Integer driverId);
 }

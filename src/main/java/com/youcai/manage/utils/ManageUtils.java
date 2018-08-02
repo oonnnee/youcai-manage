@@ -1,9 +1,11 @@
 package com.youcai.manage.utils;
 
+import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.exception.HintException;
 import com.youcai.manage.exception.ManageException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Collection;
@@ -47,5 +49,11 @@ public class ManageUtils {
 
     public static String toErrorString(String error, String cause){
         return error+"\n原因："+cause;
+    }
+
+    public static Guest getCurrentUser(){
+        return (Guest) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
     }
 }

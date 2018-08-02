@@ -92,9 +92,14 @@ public class DriverRestController {
         return ResultVOUtils.success(driverPage);
     }
 
-    @GetMapping("findList")
+    @GetMapping("/findList")
     public ResultVO<List<Driver>> findAll(){
         return ResultVOUtils.success(driverService.findAll());
+    }
+
+    @GetMapping("/findListWithState")
+    public ResultVO<List<Driver>> findListWithState(){
+        return ResultVOUtils.success(driverService.findAllWithState());
     }
 
     @GetMapping("/countAll")

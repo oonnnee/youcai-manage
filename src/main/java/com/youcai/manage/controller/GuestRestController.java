@@ -5,14 +5,15 @@ import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.form.guest.SaveForm;
 import com.youcai.manage.form.guest.UpdateForm;
 import com.youcai.manage.form.guest.UpdatePwdForm;
+import com.youcai.manage.form.user.UpdateUserPwdForm;
 import com.youcai.manage.service.GuestService;
+import com.youcai.manage.utils.EDSUtils;
 import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.utils.ResultVOUtils;
 import com.youcai.manage.vo.ResultVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
@@ -130,5 +131,24 @@ public class GuestRestController {
     @GetMapping("/countAll")
     public ResultVO<Long> count(){
         return ResultVOUtils.success(guestService.countAll());
+    }
+
+    @PostMapping("updateUserPwd")
+    public ResultVO<Guest> updateUserPwd(
+            @Valid UpdateUserPwdForm updateUserPwdForm
+    ){
+        if (!updateUserPwdForm.getNewPwd().equals(updateUserPwdForm.getReNewPwd())){
+            return ResultVOUtils.error("两次密码输入不一致");
+        }
+
+        Guest currentGuest = guestService.findCurrent();
+
+        if (!EDSUtils.encryptBasedDes(updateUserPwdForm.getOldPwd()).equals(currentGuest.getPwd())){
+            return ResultVOUtils.error("原密码错误");
+        }
+
+        guestService.updatePwd(currentGuest.getId(), updateUserPwdForm.getNewPwd());
+
+        return ResultVOUtils.success("更新密码成功");
     }
 }

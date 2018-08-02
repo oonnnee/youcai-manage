@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql:///youcai?useSSL=false
+    url: jdbc:mysql:///youcai?useSSL=false&useUnicode=true&characterEncoding=UTF-8
     password: qing1016..
     driver-class-name: com.mysql.jdbc.Driver
     username: root
@@ -17,4 +17,3 @@ security:
     enabled: false
 img:
   location: /youcai/back/image
-#  location: D:\Developers\files\youcai

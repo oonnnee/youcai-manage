@@ -18,6 +18,7 @@ public interface DriverService {
     Driver findOne(Integer id);
 
     List<Driver> findAll();
+    List<Driver> findAllWithState();
 
     Page<Driver> list(Pageable pageable);
 
