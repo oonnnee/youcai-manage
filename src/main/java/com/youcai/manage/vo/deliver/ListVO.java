@@ -14,6 +14,7 @@ public class ListVO {
 
     private String guestId;
     private String guestName;
-    private Set<Date> dates;
+    private Date deliverDate;
+    private Date orderDate;
 
 }

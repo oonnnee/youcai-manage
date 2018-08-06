@@ -14,7 +14,7 @@ public class ExportUtil {
     public static final int COL_COUNT = 7;
 
     public static void defaultSetting(Sheet sheet){
-        Integer[] widths = {3, 10, 5, 5, 5, 7, 10};
+        Integer[] widths = {3, 10, 8, 5, 8, 8, 20};
         for (int i=0; i<widths.length; i++){
             sheet.setColumnWidth(i, widths[i]*512);
         }

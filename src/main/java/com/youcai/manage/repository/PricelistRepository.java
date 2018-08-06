@@ -38,5 +38,6 @@ public interface PricelistRepository extends JpaRepository<Pricelist, PricelistK
             "LEFT JOIN guest g on pri.guest_id = g.id LEFT JOIN category c ON c.code= pro.p_code " +
             "WHERE pri.guest_id=?1 AND pri.pdate=?2 ORDER BY pro.p_code", nativeQuery = true)
     List<Object[]> findAllWith(String guestId, Date date);
+
 }
 

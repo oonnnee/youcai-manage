@@ -11,7 +11,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AllDTO {
-    private Date date;
+    private Date deliverDate;
+    private Date orderDate;
     private String state;
     private Integer driverId;
     private String driverName;
@@ -27,9 +28,12 @@ public class AllDTO {
     private String productImgfile;
     private String note;
 
-    public AllDTO(Object o, Object o1, Object oo2, Object oo3, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8, Object o9, Object o10, Object o11, Object o12) {
+    public AllDTO(Object o, Object oo1, Object o1, Object oo2, Object oo3, Object o2, Object o3, Object o4, Object o5, Object o6, Object o7, Object o8, Object o9, Object o10, Object o11, Object o12) {
         super();
-        if (o instanceof  Date) this.date = (Date)o;
+        if (o instanceof  Date) this.deliverDate = (Date)o;
+
+        if (oo1 instanceof  Date) this.orderDate = (Date)oo1;
+
         if (o1 instanceof  String) this.state = (String)o1;
 
         if (oo2 instanceof  Integer) this.driverId = (Integer)oo2;

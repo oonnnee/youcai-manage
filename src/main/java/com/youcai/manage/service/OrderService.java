@@ -21,7 +21,7 @@ public interface OrderService {
     Page<Guest> findGuestPage(Pageable pageable);
     Page<Guest> findGuestPageByGuestIdLike(Pageable pageable, String guestId);
     Page<Guest> findGuestPageByGuestNameLike(Pageable pageable, String guestName);
-    Export getExcelExport(String guestId, Date date);
+    Export getExcelExport(String guestId, Date date, String state);
     Long countByState(String state);
     List<PendingVO> findPendingList(String state);
     void updateState(String guestId, Date date, String oldState, String newState);
@@ -36,4 +36,6 @@ public interface OrderService {
     List<Object[]> sumByStateAndMonth(String state, Integer month);
 
     List<AllDTO> findAllWith(String guestId, Date date, String state);
+
+    void update(String guestId, Date date, String products);
 }

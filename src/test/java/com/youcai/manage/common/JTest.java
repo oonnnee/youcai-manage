@@ -18,11 +18,7 @@ public class JTest {
 
     @Test
     public void test() throws ParseException {
-        int dayOfWeek = LocalDate.now().getDayOfWeek().getValue();
-        int dayOfMonth = LocalDate.now().getDayOfMonth();
+        System.out.println(new BigDecimal(200).stripTrailingZeros().toPlainString());
 
-        Date startDate = DateUtils.addDays(new Date(), -(dayOfWeek-1));
-
-        System.out.println(dateFormat.format(DateUtils.addDays(startDate, 0)));
     }
 }

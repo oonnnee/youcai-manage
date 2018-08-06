@@ -1,12 +1,14 @@
 package com.youcai.manage.service.impl;
 
 import com.youcai.manage.dataobject.Product;
+import com.youcai.manage.dto.product.AllDTO;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.ProductRepository;
 import com.youcai.manage.service.DeliverService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.service.ProductService;
+import com.youcai.manage.transform.ProductTransform;
 import com.youcai.manage.utils.KeyUtils;
 import com.youcai.manage.utils.ManageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,5 +140,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findByName(name);
         return product == null ?
                 false : !product.getId().equals(id);
+    }
+
+    @Override
+    public List<AllDTO> findAllWith() {
+        List<Object[]> objectss = productRepository.findAllWith();
+        List<AllDTO> allDTOS = ProductTransform.objectssToAllDTOS(objectss);
+
+        return allDTOS;
     }
 }

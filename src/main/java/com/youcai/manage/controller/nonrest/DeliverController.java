@@ -58,11 +58,13 @@ public class DeliverController {
         sheet.addMergedRegion(new CellRangeAddress(1,1,0,6));
         row = ExportUtil.createRow(rowNumber++, sheet);
         row.getCell(0).setCellValue("客户："+export.getGuestName());
-        row.getCell(4).setCellValue("日期："+new SimpleDateFormat("yyyy年 MM月 dd日").format(export.getDate()));
+        sheet.addMergedRegion(new CellRangeAddress(2,2,0,6));
+        row = ExportUtil.createRow(rowNumber++, sheet);
+        row.getCell(0).setCellValue("采购日期："+new SimpleDateFormat("yyyy年 MM月 dd日").format(export.getOrderDate()));
         /*------------ 内容区 -------------*/
         /*--- 表格头 ---*/
         row = ExportUtil.createRow(rowNumber++, sheet);
-        String[] tableHeads = {"编号", "品名", "数量", "单位", "单价", "金额", "备注"};
+        String[] tableHeads = {"编号", "品名", "数量", "单位", "单价（元）", "金额（元）", "备注"};
         for (int i=0; i<tableHeads.length; i++){
             row.getCell(i).setCellValue(tableHeads[i]);
         }
@@ -72,7 +74,7 @@ public class DeliverController {
             String[] tds = {
                     productExport.getIndex().toString(),
                     productExport.getName(),
-                    productExport.getNum().stripTrailingZeros().toString(),
+                    productExport.getNum().stripTrailingZeros().toPlainString(),
                     productExport.getUnit(),
                     productExport.getPrice().toString(),
                     productExport.getAmount().toString(),

@@ -27,6 +27,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -125,9 +126,14 @@ public class PricelistRestController {
                 ManageUtils.toErrorString("新增报价失败", "报价产品为空")
         );
 
-        List<Pricelist> pricelists = productDTOS.stream().map(e ->
-                new Pricelist(new PricelistKey(date, guestId, e.getId()),
-                        e.getPrice(), e.getNote())
+        List<Pricelist> pricelists = productDTOS.stream().map(e -> {
+                ManageUtils.ManageException(
+                        e.getPrice().compareTo(BigDecimal.ZERO) < 0,
+                        ManageUtils.toErrorString("新增报价失败", "产品报价不能为负")
+                );
+                return new Pricelist(new PricelistKey(date, guestId, e.getId()),
+                        e.getPrice(), e.getNote());
+            }
         ).collect(Collectors.toList());
 
         pricelistService.save(pricelists);
@@ -155,9 +161,14 @@ public class PricelistRestController {
                 ManageUtils.toErrorString("更新报价失败", "报价产品为空")
         );
 
-        List<Pricelist> pricelists = productDTOS.stream().map(e ->
-                new Pricelist(new PricelistKey(date, guestId, e.getId()),
-                        e.getPrice(), e.getNote())
+        List<Pricelist> pricelists = productDTOS.stream().map(e -> {
+                ManageUtils.ManageException(
+                        e.getPrice().compareTo(BigDecimal.ZERO) < 0,
+                        ManageUtils.toErrorString("更新报价失败", "产品报价不能为负")
+                );
+                return new Pricelist(new PricelistKey(date, guestId, e.getId()),
+                        e.getPrice(), e.getNote());
+            }
         ).collect(Collectors.toList());
 
         pricelistService.update(pricelists);
@@ -200,7 +211,8 @@ public class PricelistRestController {
         List<ProductVO> products = allDTOS.stream().map(e ->
                 new ProductVO(
                         e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
-                        e.getProductMarketPrice(), e.getProductGuestPrice(), e.getProductImgfile(), e.getNote()
+                        e.getProductMarketPrice(), e.getProductGuestPrice(), e.getProductImgfile(), e.getNote(),
+                        null, null
                 )
         ).collect(Collectors.toList());
 
@@ -211,67 +223,13 @@ public class PricelistRestController {
 
         return ResultVOUtils.success(pricelistsVO);
     }
+
+    @GetMapping("/findLatest")
+    public ResultVO findLatest(
+            @RequestParam String guestId
+    ){
+        PricelistsVO pricelistsVO = pricelistService.findLatest(guestId);
+
+        return ResultVOUtils.success(pricelistsVO.getProducts());
+    }
 }
-
-//    @GetMapping("/findOne")
-//    public ResultVO findOne(
-//            @RequestParam String guestId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-//    ) {
-//        Guest guest = guestService.findOne(guestId);
-//        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取报价单失败", "此客户不存在"));
-//
-//        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
-//        ManageUtils.ManageException(pricelists, ManageUtils.toErrorString("获取报价单失败", "此客户当天不存在报价"));
-//
-//        Map<String, Product> productMap = productService.findMap();
-//
-//        PricelistsVO pricelistsVO = new PricelistsVO();
-//
-//        List<ProductVO> products = pricelists.stream().map(e ->
-//                new ProductVO(
-//                        e.getId().getProductId(), productMap.get(e.getId().getProductId()).getName(),
-//                        e.getPrice(), e.getNote()
-//                )
-//        ).collect(Collectors.toList());
-//
-//        pricelistsVO.setGuestId(guestId);
-//        pricelistsVO.setDate(date);
-//        pricelistsVO.setGuestName(guest.getName());
-//        pricelistsVO.setProducts(products);
-//
-//        return ResultVOUtils.success(pricelistsVO);
-//    }
-
-//    @GetMapping("/findOneWithCategories")
-//    public ResultVO<List<FindByGuestIdAndPdateWithCategoryVO>> findCategories(
-//            @RequestParam String guestId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
-//    ){
-//        List<Category> categories = categoryService.findAll();
-//        List<Pricelist> pricelists = pricelistService.findById_GuestIdAndId_pdate(guestId, date);
-//        Map<String, Product> productMap = productService.findMap();
-//
-//        List<FindByGuestIdAndPdateWithCategoryVO> findByGuestIdAndPdateWithCategoryVOS = new ArrayList<>();
-//        for (Category category : categories){
-//            FindByGuestIdAndPdateWithCategoryVO findByGuestIdAndPdateWithCategoryVO = new FindByGuestIdAndPdateWithCategoryVO();
-//            findByGuestIdAndPdateWithCategoryVO.setCode(category.getCode());
-//            findByGuestIdAndPdateWithCategoryVO.setName(category.getName());
-//            List<FindByGuestIdAndPdateVO> findByGuestIdAndPdateVOS = new ArrayList<>();
-//            for (Pricelist pricelist : pricelists){
-//                Product product = productMap.get(pricelist.getId().getProductId());
-//                if (product.getPCode().equals(category.getCode())){
-//                    FindByGuestIdAndPdateVO findByGuestIdAndPdateVO = new FindByGuestIdAndPdateVO();
-//                    findByGuestIdAndPdateVO.setProductId(pricelist.getId().getProductId());
-//                    findByGuestIdAndPdateVO.setProductName(product.getName());
-//                    findByGuestIdAndPdateVO.setPrice(pricelist.getPrice());
-//                    findByGuestIdAndPdateVO.setNote(pricelist.getNote());
-//                    findByGuestIdAndPdateVOS.add(findByGuestIdAndPdateVO);
-//                }
-//            }
-//            findByGuestIdAndPdateWithCategoryVO.setFindByGuestIdAndPdateVOS(findByGuestIdAndPdateVOS);
-//            findByGuestIdAndPdateWithCategoryVOS.add(findByGuestIdAndPdateWithCategoryVO);
-//        }
-//
-//        return ResultVOUtils.success(findByGuestIdAndPdateWithCategoryVOS);
-//    }

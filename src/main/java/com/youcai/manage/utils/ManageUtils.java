@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 public class ManageUtils {
@@ -55,5 +56,12 @@ public class ManageUtils {
         return (Guest) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
+    }
+
+    public static boolean isZero(BigDecimal num){
+        return num.subtract(BigDecimal.ZERO).compareTo(new BigDecimal(0.01)) < 0;
+    }
+    public static boolean isNegative(BigDecimal num){
+        return num.compareTo(BigDecimal.ZERO) < 0;
     }
 }

@@ -3,6 +3,7 @@ package com.youcai.manage.vo.deliver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +18,13 @@ public class DeliversVO {
 
     private String driverName;
 
-    private Date date;
+    private Date deliverDate;
+
+    private Date orderDate;
 
     private String state;
+
+    private BigDecimal total;
 
     @JsonProperty("products")
     private List<ProductVO> products;

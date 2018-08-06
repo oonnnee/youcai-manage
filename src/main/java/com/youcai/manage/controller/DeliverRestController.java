@@ -2,48 +2,33 @@ package com.youcai.manage.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.youcai.manage.dataobject.*;
+import com.youcai.manage.dataobject.Deliver;
+import com.youcai.manage.dataobject.DeliverKey;
+import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dto.deliver.AllDTO;
 import com.youcai.manage.dto.deliver.ProductDTO;
-import com.youcai.manage.dto.excel.deliver.Export;
-import com.youcai.manage.dto.excel.deliver.ProductExport;
-import com.youcai.manage.enums.ResultEnum;
 import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.service.*;
 import com.youcai.manage.utils.DeliverUtils;
 import com.youcai.manage.utils.ManageUtils;
 import com.youcai.manage.utils.ResultVOUtils;
-import com.youcai.manage.utils.comparator.DateComparator;
-import com.youcai.manage.utils.excel.deliver.ExportUtil;
 import com.youcai.manage.vo.ResultVO;
-import com.youcai.manage.vo.deliver.CategoryVO;
 import com.youcai.manage.vo.deliver.DeliversVO;
 import com.youcai.manage.vo.deliver.ListVO;
 import com.youcai.manage.vo.deliver.ProductVO;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -68,18 +53,20 @@ public class DeliverRestController {
     ){
         Pageable pageable = ManageUtils.getPageable(page, size);
 
-        Page<Guest> guestPage = deliverService.findGuestPage(pageable, guestName);
-        List<ListVO> listVOS = new ArrayList<>();
-        for (Guest guest : guestPage.getContent()){
-            List<Deliver> delivers = deliverService.findByIdGuestId(guest.getId());
-            Set<Date> dates = new TreeSet<>(new DateComparator());
-            for (Deliver deliver : delivers){
-                dates.add(deliver.getId().getDdate());
+        List<ListVO> listVOS = deliverService.findList();
+
+        if (!StringUtils.isEmpty(guestName)){
+            Iterator<ListVO> it = listVOS.iterator();
+            while(it.hasNext()){
+                ListVO listVO = it.next();
+                if(!listVO.getGuestName().contains(guestName)){
+                    it.remove();
+                }
             }
-            ListVO listVO = new ListVO(guest.getId(), guest.getName(), dates);
-            listVOS.add(listVO);
         }
-        Page<ListVO> listVOPage = new PageImpl<ListVO>(listVOS, pageable, guestPage.getTotalElements());
+
+
+        Page<ListVO> listVOPage = new PageImpl<ListVO>(listVOS, pageable, listVOS.size());
         return ResultVOUtils.success(listVOPage);
     }
 
@@ -100,7 +87,7 @@ public class DeliverRestController {
         }
 
         List<Deliver> delivers = productDTOS.stream().map(e ->
-                new Deliver(new DeliverKey(driverId, guestId, new Date(), e.getId(), DeliverUtils.getStateDelivering()),
+                new Deliver(new DeliverKey(driverId, guestId, new Date(), e.getId(), DeliverUtils.getStateDelivering(), orderDate),
                         e.getPrice(), e.getNum(), e.getPrice().multiply(e.getNum()), e.getNote())
         ).collect(Collectors.toList());
 
@@ -125,20 +112,26 @@ public class DeliverRestController {
 
         DeliversVO deliversVO = new DeliversVO();
 
-        List<ProductVO> products = allDTOS.stream().map( e ->
-                    new ProductVO(
-                            e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
-                            e.getProductPrice(), e.getProductNum(), e.getProductAmount(), e.getProductImgfile(),
-                            e.getNote()
-                    )
-        ).collect(Collectors.toList());
+        BigDecimal total = BigDecimal.ZERO;
+
+        List<ProductVO> products = new ArrayList<>();
+        for (AllDTO e : allDTOS){
+            products.add(new ProductVO(
+                    e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
+                    e.getProductPrice(), e.getProductNum(), e.getProductAmount(), e.getProductImgfile(),
+                    e.getNote()
+            ));
+            total = total.add(e.getProductAmount());
+        }
 
         deliversVO.setGuestId(guestId);
         deliversVO.setGuestName(guest.getName());
         deliversVO.setDriverId(allDTOS.get(0).getDriverId());
         deliversVO.setDriverName(allDTOS.get(0).getDriverName());
-        deliversVO.setDate(date);
+        deliversVO.setDeliverDate(allDTOS.get(0).getDeliverDate());
+        deliversVO.setOrderDate(allDTOS.get(0).getOrderDate());
         deliversVO.setState(allDTOS.get(0).getState());
+        deliversVO.setTotal(total);
         deliversVO.setProducts(products);
 
         return ResultVOUtils.success(deliversVO);

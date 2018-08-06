@@ -12,7 +12,8 @@ public class Export {
     private String id;
     private String guestName;
     private Driver driver;
-    private Date date;
+    private Date deliverDate;
+    private Date orderDate;
     private BigDecimal amount;
     private List<ProductExport> productExports;
 }

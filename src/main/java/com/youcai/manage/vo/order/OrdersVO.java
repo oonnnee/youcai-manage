@@ -3,6 +3,7 @@ package com.youcai.manage.vo.order;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -16,6 +17,8 @@ public class OrdersVO {
     private String guestName;
 
     private String state;
+
+    private BigDecimal total;
 
     @JsonProperty("products")
     private List<ProductVO> products;

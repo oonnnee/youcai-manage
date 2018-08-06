@@ -14,12 +14,15 @@ import com.youcai.manage.service.PricelistService;
 import com.youcai.manage.service.ProductService;
 import com.youcai.manage.transform.PricelistTransform;
 import com.youcai.manage.utils.ManageUtils;
+import com.youcai.manage.vo.pricelist.PricelistsVO;
+import com.youcai.manage.vo.pricelist.ProductVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PricelistServiceImpl implements PricelistService {
@@ -159,5 +162,54 @@ public class PricelistServiceImpl implements PricelistService {
         List<AllDTO> allDTOS = PricelistTransform.objectssToAllDTOS(objectss);
 
         return allDTOS;
+    }
+
+    @Override
+    public PricelistsVO findLatest(String guestId) {
+        List<Date> dates = this.findDates(guestId);
+        if (CollectionUtils.isEmpty(dates) == false){
+            List<Object[]> objectss = pricelistRepository.findAllWith(guestId, dates.get(0));
+            List<AllDTO> allDTOS = PricelistTransform.objectssToAllDTOS(objectss);
+
+            PricelistsVO pricelistsVO = new PricelistsVO();
+
+            List<ProductVO> products = allDTOS.stream().map(e ->
+                    new ProductVO(
+                            e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
+                            e.getProductMarketPrice(), e.getProductGuestPrice(), e.getProductImgfile(), e.getNote(),
+                            null, null
+                    )
+            ).collect(Collectors.toList());
+
+
+            pricelistsVO.setGuestId(guestId);
+            pricelistsVO.setDate(dates.get(0));
+            pricelistsVO.setProducts(products);
+
+            return pricelistsVO;
+        }else{
+            List<com.youcai.manage.dto.product.AllDTO> productAllDTOS = productService.findAllWith();
+            PricelistsVO pricelistsVO = new PricelistsVO();
+
+            List<ProductVO> products = productAllDTOS.stream().map(e ->
+                    new ProductVO(
+                            e.getId(), e.getName(), e.getCategory(), e.getUnit(),
+                            e.getPrice(), e.getPrice(), e.getImgfile(), "",
+                            null, null
+                    )
+            ).collect(Collectors.toList());
+
+            pricelistsVO.setGuestId(guestId);
+            pricelistsVO.setDate(new Date());
+            pricelistsVO.setProducts(products);
+
+            return pricelistsVO;
+        }
+    }
+
+    @Override
+    public List<Date> findDates(String guestId) {
+        List<Date> dates = pricelistRepository.findDistinctId_PdateById_GuestId(guestId);
+        return dates;
     }
 }

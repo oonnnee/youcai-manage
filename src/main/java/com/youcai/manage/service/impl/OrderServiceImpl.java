@@ -1,18 +1,24 @@
 package com.youcai.manage.service.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.youcai.manage.dataobject.Guest;
 import com.youcai.manage.dataobject.Order;
+import com.youcai.manage.dataobject.OrderKey;
 import com.youcai.manage.dataobject.Product;
 import com.youcai.manage.dto.excel.order.Export;
 import com.youcai.manage.dto.excel.order.ProductExport;
 import com.youcai.manage.dto.order.AllDTO;
+import com.youcai.manage.dto.order.NewDTO;
 import com.youcai.manage.enums.OrderEnum;
+import com.youcai.manage.exception.ManageException;
 import com.youcai.manage.repository.OrderRepository;
 import com.youcai.manage.service.GuestService;
 import com.youcai.manage.service.OrderService;
 import com.youcai.manage.service.ProductService;
 import com.youcai.manage.transform.OrderTransform;
 import com.youcai.manage.utils.ManageUtils;
+import com.youcai.manage.utils.OrderUtils;
 import com.youcai.manage.vo.order.PendingVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -85,7 +92,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Export getExcelExport(String guestId, Date date) {
+    public Export getExcelExport(String guestId, Date date, String state) {
         Export export = new Export();
         /*------------ 客户名 -------------*/
         export.setGuestName(guestService.findOne(guestId).getName());
@@ -94,23 +101,25 @@ public class OrderServiceImpl implements OrderService {
         /*------------ 产品&采购单金额 -------------*/
         List<ProductExport> productExports = new ArrayList<>();
         BigDecimal amount = BigDecimal.ZERO;
-        List<Order> orders = this.findByIdGuestIdAndIdDateAndIdState(guestId, date, OrderEnum.NEW.getState());
+        List<Order> orders = this.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
         Map<String, Product> productMap = productService.findMap();
         int index = 1;
         for (Order order : orders){
-            /*--- 产品 ---*/
-            Product product = productMap.get(order.getId().getProductId());
-            ProductExport productExport = new ProductExport();
-            productExport.setIndex(index++);
-            productExport.setName(product.getName());
-            productExport.setNum(order.getNum());
-            productExport.setUnit(product.getUnit());
-            productExport.setPrice(order.getPrice());
-            productExport.setAmount(order.getAmount());
-            productExport.setNote(order.getNote());
-            productExports.add(productExport);
-            /*--- 采购单金额 ---*/
-            amount = amount.add(order.getAmount());
+            if (!ManageUtils.isZero(order.getNum())){
+                /*--- 产品 ---*/
+                Product product = productMap.get(order.getId().getProductId());
+                ProductExport productExport = new ProductExport();
+                productExport.setIndex(index++);
+                productExport.setName(product.getName());
+                productExport.setNum(order.getNum());
+                productExport.setUnit(product.getUnit());
+                productExport.setPrice(order.getPrice());
+                productExport.setAmount(order.getAmount());
+                productExport.setNote(order.getNote());
+                productExports.add(productExport);
+                /*--- 采购单金额 ---*/
+                amount = amount.add(order.getAmount());
+            }
         }
         /*--- 产品 ---*/
         export.setProductExports(productExports);
@@ -255,5 +264,29 @@ public class OrderServiceImpl implements OrderService {
         List<AllDTO> allDTOS = OrderTransform.objectssToAllDTOS(objectss);
 
         return allDTOS;
+    }
+
+    @Override
+    public void update(String guestId, Date date, String products) {
+        List<NewDTO> newDTOS;
+        try {
+            newDTOS = new Gson().fromJson(products,
+                    new TypeToken<List<NewDTO>>() {
+                    }.getType());
+        } catch (Exception e) {
+            throw new ManageException("更新采购单失败，产品参数错误");
+        }
+
+        // 校验数量是否为负
+        for (NewDTO newDTO : newDTOS){
+            ManageUtils.ManageException(ManageUtils.isNegative(newDTO.getNum()), "更新采购单失败, 产品数量不能小于0");
+        }
+
+        List<Order> orders = newDTOS.stream().map(e ->
+                new Order(new OrderKey(date, guestId, e.getProductId(), OrderUtils.getStateNew()), e.getPrice(), e.getNum(),
+                        e.getPrice().multiply(e.getNum()), e.getNote())
+        ).collect(Collectors.toList());
+
+        orderRepository.save(orders);
     }
 }

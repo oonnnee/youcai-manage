@@ -28,4 +28,6 @@ public interface DeliverService {
     List<AllDTO> findAllWith(String guestId, Date date);
 
     boolean isDriverIdle(Integer driverId);
+
+    List<ListVO> findList();
 }

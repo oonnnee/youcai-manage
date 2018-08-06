@@ -12,6 +12,7 @@ import com.youcai.manage.repository.DeliverRepository;
 import com.youcai.manage.service.*;
 import com.youcai.manage.transform.DeliverTransform;
 import com.youcai.manage.utils.ManageUtils;
+import com.youcai.manage.utils.comparator.DateComparator;
 import com.youcai.manage.vo.deliver.ListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -43,7 +44,7 @@ public class DeliverServiceImpl implements DeliverService {
 
     @Override
     public List<Deliver> findByGuestIdAndDate(String guestId, Date date) {
-        return deliverRepository.findByIdGuestIdAndIdDdate(guestId, date);
+        return deliverRepository.findByIdGuestIdAndIdOrderDate(guestId, date);
     }
 
     @Override
@@ -88,7 +89,8 @@ public class DeliverServiceImpl implements DeliverService {
 
         export.setGuestName(guestService.findOne(guestId).getName());
         export.setDriver(driverService.findOne(delivers.get(0).getId().getDriverId()));
-        export.setDate(date);
+        export.setOrderDate(delivers.get(0).getId().getOrderDate());
+        export.setDeliverDate(delivers.get(0).getId().getDdate());
         export.setProductExports(productExports);
         export.setAmount(amount);
         return export;
@@ -135,6 +137,44 @@ public class DeliverServiceImpl implements DeliverService {
     @Override
     public boolean isDriverIdle(Integer driverId) {
         return deliverRepository.findWithDriverIdAndState(driverId, DeliverEnum.DELIVERING.getState()) == null;
+    }
+
+    @Override
+    public List<ListVO> findList() {
+        List<Object[]> objectss = deliverRepository.findDistinctDate();
+        ManageUtils.HintException(objectss, "暂无送货单");
+        List<ListVO> listVOS = DeliverTransform.objectssToListVOS(objectss);
+
+        Map<String, TreeSet<Date>> map = new HashMap<>();
+
+        for (ListVO listVO : listVOS){
+            TreeSet<Date> dateSet = map.get(listVO.getGuestId());
+
+            if (dateSet == null){
+                dateSet = new TreeSet<>(new DateComparator());
+                map.put(listVO.getGuestId(), dateSet);
+            }
+
+            dateSet.add(listVO.getOrderDate());
+        }
+
+        Iterator<ListVO> it = listVOS.iterator();
+        while(it.hasNext()){
+            ListVO listVO = it.next();
+            TreeSet<Date> dateSet = map.get(listVO.getGuestId());
+            if(!listVO.getOrderDate().equals(dateSet.first())){
+                it.remove();
+            }
+        }
+
+
+        Map<String, String> guestMap = guestService.findMap();
+
+        for (ListVO listVO : listVOS){
+            listVO.setGuestName(guestMap.get(listVO.getGuestId()));
+        }
+
+        return listVOS;
     }
 
     //    @Override

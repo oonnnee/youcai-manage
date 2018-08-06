@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import com.youcai.manage.dataobject.Order;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -129,6 +130,48 @@ public class OrderRestController {
 
         OrdersVO ordersVO = new OrdersVO();
 
+        BigDecimal total = BigDecimal.ZERO;
+
+        List<ProductVO> products = new ArrayList<>();
+        for (AllDTO e : allDTOS){
+            if (!ManageUtils.isZero(e.getProductNum())){
+                products.add(
+                    new ProductVO(
+                        e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
+                        e.getProductPrice(), e.getProductNum(), e.getProductAmount(), e.getProductImgfile(),
+                        e.getNote()
+                    )
+                );
+                total = total.add(e.getProductAmount());
+            }
+        }
+
+        ordersVO.setGuestId(guestId);
+        ordersVO.setDate(date);
+        ordersVO.setGuestName(guest.getName());
+        ordersVO.setState(state);
+        ordersVO.setTotal(total);
+        ordersVO.setProducts(products);
+
+        return ResultVOUtils.success(ordersVO);
+    }
+
+    //  TODO 更新api
+    @GetMapping("/findOneWithZero")
+    public ResultVO findOneWithZero(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+    ){
+        String state = OrderEnum.NEW.getState();
+
+        Guest guest = guestService.findOne(guestId);
+        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取采购单失败", "此客户不存在"));
+
+        List<AllDTO> allDTOS = orderService.findAllWith(guestId, date, state);
+        ManageUtils.ManageException(allDTOS, ManageUtils.toErrorString("获取采购单失败", "未能查询到此采购单"));
+
+        OrdersVO ordersVO = new OrdersVO();
+
         List<ProductVO> products = allDTOS.stream().map( e ->
                 new ProductVO(
                         e.getProductId(), e.getProductName(), e.getProductCategory(), e.getProductUnit(),
@@ -176,80 +219,15 @@ public class OrderRestController {
         return ResultVOUtils.success("退回采购单成功");
     }
 
-    //    @GetMapping("/findOne")
-//    public ResultVO findOne(
-//            @RequestParam String guestId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-//            @RequestParam String state
-//    ){
-//        Guest guest = guestService.findOne(guestId);
-//        ManageUtils.ManageException(guest, ManageUtils.toErrorString("获取采购单失败", "此客户不存在"));
-//
-//        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
-//        ManageUtils.ManageException(orders, ManageUtils.toErrorString("获取采购单失败", "未能查询到此采购单"));
-//
-//        Map<String, Product> productMap = productService.findMap();
-//
-//        OrdersVO ordersVO = new OrdersVO();
-//
-//        List<ProductVO> products = orders.stream().map( e -> {
-//                Product product = productMap.get(e.getId().getProductId());
-//                return new ProductVO(
-//                        product.getId(), product.getName(), product.getUnit(),
-//                        e.getPrice(), e.getNum(), e.getAmount(), e.getNote()
-//                );
-//            }
-//        ).collect(Collectors.toList());
-//
-//        ordersVO.setGuestId(guestId);
-//        ordersVO.setDate(date);
-//        ordersVO.setGuestName(guest.getName());
-//        ordersVO.setState(state);
-//        ordersVO.setProducts(products);
-//
-//        return ResultVOUtils.success(ordersVO);
-//    }
-
-    //    @GetMapping("/findOneWithCategories")
-//    public ResultVO<List<CategoryVO>> findCategories(
-//            @RequestParam String guestId,
-//            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-//            @RequestParam String state
-//    ){
-//        /*------------ 1.查询数据 -------------*/
-//        /*--- 产品大类数据 ---*/
-//        List<Category> categories = categoryService.findAll();
-//        /*--- 采购数据 ---*/
-//        List<Order> orders = orderService.findByIdGuestIdAndIdDateAndIdState(guestId, date, state);
-//        /*--- 产品数据 ---*/
-//        Map<String, Product> productMap = productService.findMap();
-//        /*------------ 2.数据拼装 -------------*/
-//        List<CategoryVO> categoryVOS = new ArrayList<>();
-//        for (Category category : categories){
-//            CategoryVO categoryVO = new CategoryVO();
-//            categoryVO.setCode(category.getCode());
-//            categoryVO.setName(category.getName());
-//            List<ProductVO> productVOS = new ArrayList<>();
-//            for (Order order : orders){
-//                Product product = productMap.get(order.getId().getProductId());
-//                if (product.getPCode().equals(category.getCode())){
-//                    ProductVO productVO = new ProductVO();
-//                    productVO.setId(order.getId().getProductId());
-//                    productVO.setName(product.getName());
-//                    productVO.setUnit(product.getUnit());
-//                    productVO.setPrice(order.getPrice());
-//                    productVO.setNum(order.getNum());
-//                    productVO.setAmount(order.getAmount());
-//                    productVO.setNote(order.getNote());
-//                    productVOS.add(productVO);
-//                }
-//            }
-//            categoryVO.setProducts(productVOS);
-//            categoryVOS.add(categoryVO);
-//        }
-//        /*------------ 3.返回 -------------*/
-//        return ResultVOUtils.success(categoryVOS);
-//    }
+    @PostMapping("/update")
+    public ResultVO update(
+            @RequestParam String guestId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String products
+    ){
+        orderService.update(guestId, date, products);
+        return ResultVOUtils.success("更新采购单成功");
+    }
 }
 
 

@@ -37,9 +37,10 @@ public class OrderController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> orderExport(
             @RequestParam String guestId,
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+            @RequestParam String state
     ) throws IOException {
-        Export export = orderService.getExcelExport(guestId, date);
+        Export export = orderService.getExcelExport(guestId, date, state);
         // create a new workbook
         XSSFWorkbook wb = new XSSFWorkbook();
         // create a sheet
@@ -64,7 +65,7 @@ public class OrderController {
         /*------------ 内容区 -------------*/
         /*--- 表格头 ---*/
         row = ExportUtil.createRow(rowNumber++, sheet);
-        String[] tableHeads = {"编号", "品名", "下单量", "单位", "单价", "金额", "备注"};
+        String[] tableHeads = {"编号", "品名", "下单量", "单位", "单价（元）", "金额（元）", "备注"};
         for (int i=0; i<tableHeads.length; i++){
             row.getCell(i).setCellValue(tableHeads[i]);
         }
@@ -74,7 +75,7 @@ public class OrderController {
             String[] tds = {
                     productExport.getIndex().toString(),
                     productExport.getName(),
-                    productExport.getNum().stripTrailingZeros().toString(),
+                    productExport.getNum().stripTrailingZeros().toPlainString(),
                     productExport.getUnit(),
                     productExport.getPrice().toString(),
                     productExport.getAmount().toString(),

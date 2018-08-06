@@ -13,6 +13,8 @@ import java.util.Date;
  */
 @Embeddable
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderKey implements Serializable {
 
     /*--- 采购单日期 ---*/

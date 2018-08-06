@@ -12,12 +12,12 @@ import java.util.List;
 public interface DeliverRepository extends JpaRepository<Deliver, DeliverKey> {
     List<Deliver> findByIdGuestId(String guestId);
 
-    List<Deliver> findByIdGuestIdAndIdDdate(String guestId, Date date);
+    List<Deliver> findByIdGuestIdAndIdOrderDate(String guestId, Date date);
 
     @Query(value = "select distinct guest_id from d_list", nativeQuery = true)
     List<String> findDistinctGuestId();
 
-    @Query(value = "select distinct ddate from d_list where guest_id = ?1 order by ddate desc", nativeQuery = true)
+    @Query(value = "select distinct order_date from d_list where guest_id = ?1 order by order_date desc", nativeQuery = true)
     List<Date> findDistinctDateByGuestId(String guestId);
 
     @Query(value = "select 1 from d_list where guest_id = ?1 limit 1", nativeQuery = true)
@@ -31,7 +31,8 @@ public interface DeliverRepository extends JpaRepository<Deliver, DeliverKey> {
     String findWithDriverIdAndState(Integer driverId, String state);
 
     @Query(value = "SELECT\n" +
-            "\td.ddate AS date,\n" +
+            "\td.ddate AS deliverDate,\n" +
+            "\td.order_date AS orderDate,\n" +
             "\td.state,\n" +
             "\tdriver.id AS driver_id,\n" +
             "\tdriver.NAME AS driver_name,\n" +
@@ -54,10 +55,13 @@ public interface DeliverRepository extends JpaRepository<Deliver, DeliverKey> {
             "\tLEFT JOIN driver ON driver.id = d.d_id \n" +
             "WHERE\n" +
             "\td.guest_id = ?1 \n" +
-            "\tAND d.ddate = ?2 \n" +
+            "\tAND d.order_date = ?2 \n" +
             "ORDER BY\n" +
             "\tp.p_code", nativeQuery = true)
     List<Object[]> findAllWith(String guestId, Date date);
+
+    @Query(value = "select distinct guest_id,ddate,order_date from d_list", nativeQuery = true)
+    List<Object[]> findDistinctDate();
 
 //    @Modifying
 //    @Query(value = "delete from d_list where guest_id=?1 and d_id=?2 and ddate=?3", nativeQuery = true)

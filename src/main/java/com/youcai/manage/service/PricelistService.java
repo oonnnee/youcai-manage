@@ -3,6 +3,7 @@ package com.youcai.manage.service;
 import com.youcai.manage.dataobject.Pricelist;
 import com.youcai.manage.dto.excel.pricelist.Export;
 import com.youcai.manage.dto.pricelist.AllDTO;
+import com.youcai.manage.vo.pricelist.PricelistsVO;
 
 import java.util.Date;
 import java.util.List;
@@ -32,4 +33,8 @@ public interface PricelistService {
     boolean isProductExist(String productId);
 
     boolean isRepeat(String guestId, Date date);
+
+    PricelistsVO findLatest(String guestId);
+
+    List<Date> findDates(String guestId);
 }

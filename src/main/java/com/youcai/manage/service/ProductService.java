@@ -1,6 +1,7 @@
 package com.youcai.manage.service;
 
 import com.youcai.manage.dataobject.Product;
+import com.youcai.manage.dto.product.AllDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,4 +31,6 @@ public interface ProductService {
 
     boolean isNameRepeat(String name);
     boolean isNameRepeat(String name, String id);
+
+    List<AllDTO> findAllWith();
 }

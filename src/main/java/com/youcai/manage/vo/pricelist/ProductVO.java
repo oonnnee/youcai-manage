@@ -19,5 +19,7 @@ public class ProductVO {
     private BigDecimal guestPrice;
     private String imgfile;
     private String note;
+    private String pcode;
+    private BigDecimal num;
 
 }
