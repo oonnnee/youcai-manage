@@ -55,6 +55,6 @@ public class EDSUtils {
     }
 
     public static void main(String args[]){
-        System.out.println(encryptBasedDes("123456"));
+        System.out.println(decryptBasedDes("RjKgxMZfXdw="));
     }
 }
